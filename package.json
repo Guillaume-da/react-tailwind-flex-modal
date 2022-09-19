@@ -1,7 +1,8 @@
 {
   "name": "react-tailwind-flex-modal",
-  "version": "1.2.0",
+  "version": "1.2.3",
   "description": "A light Modal made with Tailwind",
+  "keywords": ["react", "tailwind", "multipurpose-modal", "modal", "aproval-modal", "react tailwind modal", "react tailwind multipurpose modal"],
   "author": "Guillaume-da",
   "license": "MIT",
   "repository": "https://github.com/Guillaume-da/react-tailwind-flex-modal",
