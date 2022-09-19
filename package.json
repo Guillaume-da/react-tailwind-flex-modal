@@ -1,10 +1,10 @@
 {
   "name": "react-tailwind-flex-modal",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A light Modal made with Tailwind",
   "author": "Guillaume-da",
   "license": "MIT",
-  "repository": "",
+  "repository": "https://github.com/Guillaume-da/react-tailwind-flex-modal",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.js",
