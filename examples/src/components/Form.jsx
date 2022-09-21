@@ -16,14 +16,14 @@ function FormModal(props) {
 		zipcode: props.zipcode
 	}
 
-	function handleFormSending(e) {
-		// eslint-disable-next-line no-unused-expressions
-		e.preventDefault
-		console.log(form) 
-		props.setShowModal(false) 
-		props.setFormModal(false)
-	}
-
+	// function handleFormSending(e) {
+	// 	// eslint-disable-next-line no-unused-expressions
+	// 	e.preventDefault
+	// 	console.log(form) 
+	// 	props.setShowModal(false) 
+	// 	props.setFormModal(false)
+	// }
+console.log('form',props)
 	return (
 		<div className="w-full max-w-lg">
 			<div className="flex flex-wrap -mx-3 mb-2">
@@ -178,7 +178,7 @@ function FormModal(props) {
 				<div className="w-full flex justify-between px-3">
 					<button 
 						className="w-5/12 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded"
-						onClick={() => {props.setShowModal(false), props.setFormModal(false)}}
+						onClick={(e) => props.handleClose(e)}
 					>
                     Cancel
 					</button>

@@ -19,7 +19,63 @@ import 'react-tailwind-flex-modal/dist/index.css'
 
 react-tailwind-flex-modal allows you to make quickly 3 types of modal
 
-Define the style of your modal, you can define a style for darkmode too:
+### Simple Modal
+
+Pass your text like this:
+```jsx
+const modalTitle = 'CONGRATULATIONS!'
+const message = 'Your modal is working.'
+const closeMessage = 'Close'
+```
+And choose a modal:
+```jsx
+const currentModal = 'simpleModal'
+```
+Pass this in your modal props
+```jsx
+<Modal 
+setShowModal={setShowModal} 
+currentModal={currentModal}
+successTitle={modalTitle} 
+message={message} 
+closeMessage={closeMessage} 
+handleClose={handleClose}
+...
+```
+
+### Aproval Modal
+
+Just add this in your Modal props
+```jsx
+const currentModal = 'aprovalModal'
+```
+
+```jsx
+{showModal ? 
+	<Modal 
+	setShowModal={setShowModal} // boolean
+	warningTitle={warningTitle} // must be a string
+	closeMessage={closeMessage}  // must be a string
+	aprovalMessage={aprovalMessage} // must be a string
+	setShowModal={setShowModal} // boolean
+	warningMessage={message} // must be a string
+	warningIcon={warningIcon} // must be a string
+	handleClose={handleClose} // function
+	handleAproval={handleAproval} // function
+	/>
+	: 
+	<div></div>
+```
+
+### Form Modal
+
+You can pass a component to the modal, just pass it as a prop and call it formComponent:
+```jsx
+const currentModal = 'fomModal'
+formComponent={formComponent}
+```
+
+Define the style of your modal, you can define a style for darkmode too. Default values are:
 ```jsx
 const modalBackground = 'bg-white'
 const darkModalBackground = 'dark:bg-zinc-900'
@@ -32,65 +88,10 @@ const darkAprovalButtonBgColor = 'dark:bg-lime-600'
 const closeButtonBgColor = 'bg-red-600'
 const buttonsTextColor = 'text-white'
 ```
-Pass your text like this:
-```jsx
-const modalTitle = 'CONGRATULATIONS!'
-const message = 'Your modal is working.'
-const closeMessage = 'Close'
-```
-```jsx
-<Modal 
-setShowModal={setShowModal} 
-successTitle={modalTitle} 
-message={message} 
-closeMessage={closeMessage} 
-handleClose={handleClose}
-modalBackground={modalBackground}
-darkModalBackground={darkModalBackground}
-...
-```
 
-### Aproval Modal
-
-Just add this in your Modal props and set it with the message you want in the approval button
+By default the animation is setted on fade in up, you can choose fade-in-down or fade-in:
 ```jsx
-aprovalMessage={aprovalMessage} 
-```
-
-```jsx
-{showModal ? 
-	<Modal 
-	warningTitle={warningTitle} // must be a string
-	closeMessage={closeMessage}  // must be a string
-	aprovalMessage={aprovalMessage} // must be a string
-	setShowModal={setShowModal} // boolean
-	setFormModal={setFormModal} 
-	message={message} // must be a string
-	warningIcon={warningIcon} // must be a string
-	formModal={formModal} // boolean
-	formComponent={formComponent} // JSX
-	handleClose={handleClose} // function
-	handleAproval={handleAproval} // function
-	modalBackground={modalBackground} // must be a string and use a Tailwind class
-	darkModalBackground={darkModalBackground} // must be a string and use a Tailwind class
-	successTitleColor={successTitleColor} // must be a string and use a Tailwind class
-	warningTitleColor={warningTitleColor} // must be a string and use a Tailwind class
-	darkSuccessTitleColor={darkSuccessTitleColor} // must be a string and use a Tailwind class
-	messageTextColor={messageTextColor} // must be a string and use a Tailwind class
-	aprovalButtonBgColor={aprovalButtonBgColor} // must be a string and use a Tailwind class
-	darkAprovalButtonBgColor={darkAprovalButtonBgColor} // must be a string and use a Tailwind class
-	closeButtonBgColor={closeButtonBgColor} // must be a string and use a Tailwind class
-	buttonsTextColor={buttonsTextColor} // must be a string and use a Tailwind class
-	/>
-	: 
-	<div></div>
-```
-
-### Form Modal
-
-You can pass a component to the modal, just pass it as a prop and call it formComponent:
-```jsx
-formComponent={formComponent}
+const animation = 'animate-fade-in'
 ```
 
 ### Added
