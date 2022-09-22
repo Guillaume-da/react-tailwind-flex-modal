@@ -1,7 +1,10 @@
 {
   "name": "react-tailwind-flex-modal",
-  "version": "1.3.1",
+  "version": "1.5.2",
   "description": "A light Modal made with Tailwind",
+  "author": "Guillaume-da",
+  "license": "MIT",
+  "repository": "https://github.com/Guillaume-da/react-tailwind-flex-modal",
   "keywords": [
     "react",
     "tailwind",
@@ -11,18 +14,15 @@
     "react tailwind modal",
     "react tailwind multipurpose modal"
   ],
-  "author": "Guillaume-da",
-  "license": "MIT",
-  "repository": "https://github.com/Guillaume-da/react-tailwind-flex-modal",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
-  "source": "src/index.js",
+  "source": "src/index.tsx",
   "engines": {
     "node": ">=10"
   },
   "scripts": {
-    "build": "NODE_ENV=publish microbundle-crl --no-compress --jsxFragment React.Fragment --format modern,cjs",
-    "start": "NODE_ENV=development microbundle-crl watch --no-compress --format modern,cjs ",
+    "build": "NODE_ENV=publish microbundle-crl --compress --format modern,cjs",
+    "start": "microbundle-crl watch --no-compress --format modern,cjs",
     "prepare": "run-s build",
     "test": "run-s test:unit test:lint test:build",
     "test:build": "run-s build",
@@ -37,6 +37,15 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "@types/jest": "^25.1.4",
+    "@types/node": "^12.12.38",
+    "@types/react": "^16.9.27",
+    "@types/react-dom": "^16.9.7",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "@typescript-eslint/parser": "^2.26.0",
     "autoprefixer": "^9.8.8",
     "babel-eslint": "^10.0.3",
     "cross-env": "^7.0.2",
@@ -58,7 +67,8 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "^3.4.1",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17"
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17",
+    "typescript": "^3.7.5"
   },
   "files": [
     "dist"

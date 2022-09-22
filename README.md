@@ -54,6 +54,7 @@ const currentModal = 'aprovalModal'
 {showModal ? 
 	<Modal 
 	setShowModal={setShowModal} // boolean
+  	currentModal={currentModal} // string
 	warningTitle={warningTitle} // must be a string
 	closeMessage={closeMessage}  // must be a string
 	aprovalMessage={aprovalMessage} // must be a string

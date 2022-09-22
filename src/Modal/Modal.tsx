@@ -1,18 +1,53 @@
-/* eslint-disable react/prop-types */
-import React, { useEffect, useRef } from 'react'
+/* eslint-disable no-unused-vars */
+import React, {
+  useEffect,
+  useRef,
+  Dispatch,
+  SetStateAction,
+  KeyboardEvent
+} from 'react'
 import { RiErrorWarningLine } from 'react-icons/ri'
 
-function Modal(props) {
+interface IModal {
+  setShowModal: Dispatch<SetStateAction<boolean>>
+  animation?: string
+  modalBackground?: string
+  darkModalBackground?: string
+  currentModal?: string
+  successTitleColor?: string
+  darkSuccessTitleColor?: string
+  successTitle?: string
+  messageTextColor?: string
+  buttonsTextColor?: string
+  closeButtonBgColor?: string
+  message?: string
+  warningTitleColor?: string
+  closeMessage?: string
+  warningIcon?: string
+  warningTitle?: string
+  warningMessage?: string
+  aprovalButtonBgColor?: string
+  darkAprovalButtonBgColor?: string
+  aprovalMessage?: string
+  formComponent?: JSX.Element
+  handleClose: () => void
+  handleAproval: () => void
+  handleCloseAproval: () => void
+}
+
+const Modal: React.FC<IModal> = (props) => {
   const refAprovalButton = useRef(null)
   const refCloseButton = useRef(null)
 
   useEffect(() => {
-    const close = (e) => {
-      if (e.keyCode === 27) {
+    const close = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Escape') {
         props.setShowModal(false)
       }
     }
+    // @ts-ignore
     window.addEventListener('keydown', close)
+    // @ts-ignore
     return () => window.removeEventListener('keydown', close)
   }, [])
 
@@ -144,7 +179,7 @@ function Modal(props) {
                     </div>
                   )
                 case 'formModal':
-                  return <>{props.formComponent}</>
+                  return <div>{props.formComponent}</div>
                 default:
                   return null
               }
