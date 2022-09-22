@@ -1,6 +1,6 @@
 {
   "name": "react-tailwind-flex-modal",
-  "version": "1.5.2",
+  "version": "1.5.4",
   "description": "A light Modal made with Tailwind",
   "author": "Guillaume-da",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "node": ">=10"
   },
   "scripts": {
-    "build": "NODE_ENV=publish microbundle-crl --compress --format modern,cjs",
+    "build": "NODE_ENV=publish microbundle-crl --no-compress --format modern,cjs",
     "start": "microbundle-crl watch --no-compress --format modern,cjs",
     "prepare": "run-s build",
     "test": "run-s test:unit test:lint test:build",

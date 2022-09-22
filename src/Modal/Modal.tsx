@@ -4,7 +4,8 @@ import React, {
   useRef,
   Dispatch,
   SetStateAction,
-  KeyboardEvent
+  KeyboardEvent,
+  MouseEventHandler
 } from 'react'
 import { RiErrorWarningLine } from 'react-icons/ri'
 
@@ -30,7 +31,7 @@ interface IModal {
   darkAprovalButtonBgColor?: string
   aprovalMessage?: string
   formComponent?: JSX.Element
-  handleClose: () => void
+  handleClose: MouseEventHandler<HTMLButtonElement>
   handleAproval: () => void
   handleCloseAproval: () => void
 }

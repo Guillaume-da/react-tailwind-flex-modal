@@ -23,7 +23,7 @@ function FormModal(props) {
 	// 	props.setShowModal(false) 
 	// 	props.setFormModal(false)
 	// }
-console.log('form',props)
+	console.log('form',props)
 	return (
 		<div className="w-full max-w-lg">
 			<div className="flex flex-wrap -mx-3 mb-2">
