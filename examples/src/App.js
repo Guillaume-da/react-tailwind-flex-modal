@@ -12,6 +12,7 @@ function App() {
   const modalTitle = 'CONGRATULATIONS!'
 	const message = 'Your modal is working'
 	const closeMessage = 'Close'
+  const successTitleColor = 'text-lime-600'
 
   function handleOpenSimpleModal(e){
     setCurrentModal('simpleModal')
@@ -19,7 +20,7 @@ function App() {
   }
 
   const warningTitle = 'WARNING!'
-	const warningMessage = 'Your modal is working'
+	const warningMessage = 'Are you sure?'
   const aprovalMessage = 'Yes do it !'
 	
 
@@ -70,6 +71,7 @@ function App() {
 					handleClose={handleClose}
           handleCloseAproval={handleCloseAproval} // aproval modal
           formComponent={formComponent} // form
+          successTitleColor={successTitleColor} // default: 'text-lime-600'
 			/> 
     : 
     <div></div>  
