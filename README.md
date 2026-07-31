@@ -167,6 +167,17 @@ npm run dev
 
 The example app consumes the library from source via `file:..`.
 
+## Contributing
+
+Building the package needs nothing special, but **the test suite requires Node 22.22+
+or 24.15+** — jsdom 30 does not run on Node 20. `engines` stays at `>=18` because that
+is what *consuming* the published browser bundle needs.
+
+```bash
+npm ci
+npm test   # types, unit, lint, build
+```
+
 ## License
 
 MIT © [Guillaume-da](https://github.com/Guillaume-da)
