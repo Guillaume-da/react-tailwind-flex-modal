@@ -1,3 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Matches the library: dark mode is driven by a `.dark` class, not the OS. */
+@custom-variant dark (&:where(.dark, .dark *));

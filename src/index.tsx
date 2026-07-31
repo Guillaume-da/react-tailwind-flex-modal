@@ -1,4 +1,6 @@
-import './tailwind.css'
-import './index.css'
-
-export { default as Modal } from './Modal/Modal.jsx'
+export { default as Modal } from './Modal/Modal'
+export type {
+	ModalProps,
+	ModalVariant,
+	LegacyModalVariant
+} from './Modal/Modal'

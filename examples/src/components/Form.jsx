@@ -178,13 +178,13 @@ function FormModal(props) {
 				<div className="w-full flex justify-between px-3">
 					<button 
 						className="w-5/12 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded"
-						onClick={(e) => props.handleClose(e)}
+						onClick={props.onClose}
 					>
                     Cancel
 					</button>
 					<button 
 						className="w-5/12 bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded"
-						onClick={(e) => console.log(form)}
+						onClick={() => console.log(form)}
 					>
                     Save
 					</button>
