@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # jsdom 30 declares node ^22.22.2 || ^24.15.0 || >=26. Node 20 installs
+        # fine (engines are advisory) then dies at runtime inside undici.
+        node: [22, 24]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      # `prepare` already runs a full build here, so `npm test` only re-runs it
+      # to prove the build is reproducible from a clean tree.
+      - run: npm ci
+
+      - run: npm test
+
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build the examples app against the local library
+        working-directory: examples
+        run: |
+          npm install
+          npm run build
