@@ -162,6 +162,10 @@
 		@apply bg-slate-900/60;
 	}
 
+	.dark .rtm-theme-glass .rtm-icon {
+		@apply bg-white/10 text-rose-300 ring-white/20;
+	}
+
 	.dark .rtm-theme-glass .rtm-title {
 		@apply text-white;
 	}
@@ -296,8 +300,14 @@
 		@apply mt-4 text-sm leading-7 text-neutral-500;
 	}
 
+	/* `hidden` would be dead here — the badge's `flex` is a utility and outranks
+	   this layer. Strip it back to the glyph instead. */
 	.rtm-theme-minimal .rtm-icon {
-		@apply hidden;
+		@apply rounded-none bg-transparent text-black;
+	}
+
+	.dark .rtm-theme-minimal .rtm-icon {
+		@apply text-white;
 	}
 
 	.rtm-theme-minimal .rtm-close {
