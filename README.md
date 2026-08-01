@@ -125,6 +125,9 @@ Animation defaults to fade in up; `animate-fade-in-down` and `animate-fade-in` a
 
 ## Migrating from v1
 
+The full list of changes is in the
+[v2.0.0 release notes](https://github.com/Guillaume-da/react-tailwind-flex-modal/releases/tag/v2.0.0).
+
 **v1 props still work.** They are marked `@deprecated` and resolve to the new ones, so
 existing code keeps running — but three things do change and are not shimmed:
 
