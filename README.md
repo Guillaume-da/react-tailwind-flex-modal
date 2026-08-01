@@ -22,22 +22,56 @@ hard parts are already done for you:
   the page never shifts, a top-right "X" button, dark mode, and an optional
   bottom-sheet presentation on mobile.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/terminal.png" alt="The terminal theme: a dark navy window with three traffic-light dots, a centered monospace title, a green shell prompt, white output, an amber quoted string and a blinking caret" width="820" />
-</p>
+## The seven themes
 
-<p align="center">
-  <em>Seven themes ship with the package. This one is <code>theme='terminal'</code>.</em>
-</p>
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neutral.png" alt="The neutral theme: a white panel with an outlined cancel button and a red destructive confirm button" width="100%" /><br /><code>neutral</code> — The default. White panel, outlined cancel, red destructive confirm.</td>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/terminal.png" alt="The terminal theme: dark navy window, traffic lights, monospace, blinking caret" width="100%" /><br /><code>terminal</code> — Dark navy window, traffic lights, monospace, blinking caret.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/brutalist.png" alt="The brutalist theme: flat 6px offset shadow instead of blur, 2px ink borders, vermillion confirm" width="100%" /><br /><code>brutalist</code> — Flat 6px offset shadow instead of blur, 2px ink borders, vermillion confirm.</td>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/glass.png" alt="The glass theme: frosted translucent panel over a heavily blurred backdrop" width="100%" /><br /><code>glass</code> — Frosted translucent panel over a heavily blurred backdrop.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/editorial.png" alt="The editorial theme: warm paper stock, serif title, hairline rules, small caps" width="100%" /><br /><code>editorial</code> — Warm paper stock, serif title, hairline rules, small caps.</td>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neon.png" alt="The neon theme: deep violet panel, glowing ring, gradient confirm" width="100%" /><br /><code>neon</code> — Deep violet panel, glowing ring, gradient confirm.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/minimal.png" alt="The minimal theme: no borders, no shadow — hierarchy carried by space alone" width="100%" /><br /><code>minimal</code> — No borders, no shadow — hierarchy carried by space alone.</td>
+    <td width="50%"></td>
+  </tr>
+</table>
 
-> Most screenshots below use the shipped [`brutalist`](#themes) theme, because it
-> photographs well. The default is `neutral`: a plain white panel, an outlined cancel
-> button and a red confirm button.
+<details>
+<summary><b>Every theme in dark mode</b></summary>
+
+<br />
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neutral-dark.png" alt="The neutral theme in dark mode: a zinc panel with a light title and a red confirm button" width="100%" /><br /><code>neutral</code></td>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/brutalist-dark.png" alt="The brutalist theme in dark mode: an ink panel with a yellow border and a vermillion offset shadow" width="100%" /><br /><code>brutalist</code></td>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/editorial-dark.png" alt="The editorial theme in dark mode: a dark brown panel with a cream serif title and hairline rules" width="100%" /><br /><code>editorial</code></td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/glass-dark.png" alt="The glass theme in dark mode: a translucent dark panel frosting the page behind it" width="100%" /><br /><code>glass</code></td>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neon-dark.png" alt="The neon theme in dark mode: a near-black violet panel with a glowing fuchsia ring and gradient confirm button" width="100%" /><br /><code>neon</code></td>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/minimal-dark.png" alt="The minimal theme in dark mode: a flat black panel with white type and no borders" width="100%" /><br /><code>minimal</code></td>
+  </tr>
+</table>
+
+</details>
+
+Anything you pass through [`classNames`](#styling) still wins over a theme, so these
+are starting points, not cages. [Full details below.](#themes)
+
 
 Requires **React 18 or 19** and **Tailwind CSS 4**.
 
 ## Table of contents
 
+- [The seven themes](#the-seven-themes)
 - [Installation](#installation)
 - [Quick start](#quick-start)
 - [The three variants](#the-three-variants)
@@ -279,7 +313,8 @@ Two things worth knowing:
 
 ## Themes
 
-Seven looks ship with the package. Pick one with the `theme` prop:
+Seven looks ship with the package — [pictured at the top](#the-seven-themes). Pick
+one with the `theme` prop:
 
 ```jsx
 <Modal theme='terminal' isOpen={isOpen} onClose={close}>
@@ -287,24 +322,6 @@ Seven looks ship with the package. Pick one with the `theme` prop:
 </Modal>
 ```
 
-<table>
-  <tr>
-    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neutral.png" alt="The neutral theme: the default. white panel, outlined cancel, red destructive confirm" width="100%" /><br /><code>neutral</code> — The default. White panel, outlined cancel, red destructive confirm.</td>
-    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/terminal.png" alt="The terminal theme: dark navy window, traffic lights, monospace, blinking caret" width="100%" /><br /><code>terminal</code> — Dark navy window, traffic lights, monospace, blinking caret.</td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/brutalist.png" alt="The brutalist theme: flat 6px offset shadow instead of blur, 2px ink borders, vermillion confirm" width="100%" /><br /><code>brutalist</code> — Flat 6px offset shadow instead of blur, 2px ink borders, vermillion confirm.</td>
-    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/glass.png" alt="The glass theme: frosted translucent panel over a heavily blurred backdrop" width="100%" /><br /><code>glass</code> — Frosted translucent panel over a heavily blurred backdrop.</td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/editorial.png" alt="The editorial theme: warm paper stock, serif title, hairline rules, small caps" width="100%" /><br /><code>editorial</code> — Warm paper stock, serif title, hairline rules, small caps.</td>
-    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neon.png" alt="The neon theme: deep violet panel, glowing ring, gradient confirm" width="100%" /><br /><code>neon</code> — Deep violet panel, glowing ring, gradient confirm.</td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/minimal.png" alt="The minimal theme: no borders, no shadow — hierarchy carried by space alone" width="100%" /><br /><code>minimal</code> — No borders, no shadow — hierarchy carried by space alone.</td>
-    <td width="50%"></td>
-  </tr>
-</table>
 
 The registry is exported, so you can build a picker or read a theme's description:
 
@@ -393,20 +410,8 @@ the colour props or `classNames` to get the old look back.
 Dark mode is driven by a `.dark` class on any ancestor (not the OS preference), which
 plays nicely with theme togglers:
 
-Every theme carries its own dark mode, not just a recolour:
-
-<table>
-  <tr>
-    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neutral-dark.png" alt="The neutral theme in dark mode: a zinc panel with a light title and a red confirm button" width="100%" /><br /><code>neutral</code></td>
-    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/brutalist-dark.png" alt="The brutalist theme in dark mode: an ink panel with a yellow border and a vermillion offset shadow" width="100%" /><br /><code>brutalist</code></td>
-    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/editorial-dark.png" alt="The editorial theme in dark mode: a dark brown panel with a cream serif title and hairline rules" width="100%" /><br /><code>editorial</code></td>
-  </tr>
-  <tr>
-    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/glass-dark.png" alt="The glass theme in dark mode: a translucent dark panel frosting the page behind it" width="100%" /><br /><code>glass</code></td>
-    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neon-dark.png" alt="The neon theme in dark mode: a near-black violet panel with a glowing fuchsia ring and gradient confirm button" width="100%" /><br /><code>neon</code></td>
-    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/minimal-dark.png" alt="The minimal theme in dark mode: a flat black panel with white type and no borders" width="100%" /><br /><code>minimal</code></td>
-  </tr>
-</table>
+Every theme carries its own dark mode, not just a recolour — see the gallery at the
+top of this README.
 
 ```html
 <html class="dark">
@@ -429,8 +434,8 @@ works exactly as it did in 2.2.
 +import 'tailwind-react-modal/styles.css'
 ```
 
-`react-tailwind-flex-modal` stays installable and stays on 2.2.0, but every release
-from here lands under the new name.
+`react-tailwind-flex-modal` stays installable and stops at 2.1.0, its last published
+version; every release from here lands under the new name.
 
 New in 3.0: [themes](#themes), the `titleBar` / `titleBarLabel` props, and the
 `content` and `titleBar` `classNames` slots.
