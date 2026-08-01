@@ -370,17 +370,17 @@ describe('Modal', () => {
 			const { getByText, getByLabelText } = render(
 				<Modal {...baseProps} variant='approval' approveLabel='Yes' />
 			)
-			// DOM order inside the dialog: approve, close, then the X button.
+			// DOM order inside the dialog: close, approve, then the X button.
 			getByLabelText('Close dialog').focus()
 			fireEvent.keyDown(document, { key: 'Tab' })
-			expect(getByText('Yes')).toHaveFocus()
+			expect(getByText('Close')).toHaveFocus()
 		})
 
 		it('wraps Shift+Tab from the first focusable back to the last', () => {
 			const { getByText, getByLabelText } = render(
 				<Modal {...baseProps} variant='approval' approveLabel='Yes' />
 			)
-			getByText('Yes').focus()
+			getByText('Close').focus()
 			fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
 			expect(getByLabelText('Close dialog')).toHaveFocus()
 		})
@@ -394,9 +394,9 @@ describe('Modal', () => {
 					showCloseButton={false}
 				/>
 			)
-			getByText('Close').focus()
+			getByText('Yes').focus()
 			fireEvent.keyDown(document, { key: 'Tab' })
-			expect(getByText('Yes')).toHaveFocus()
+			expect(getByText('Close')).toHaveFocus()
 		})
 	})
 

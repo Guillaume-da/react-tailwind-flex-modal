@@ -31,7 +31,16 @@ const getFocusable = (root: HTMLElement | null): HTMLElement[] =>
 		: []
 
 const BUTTON_BASE =
-	'h-10 px-5 rounded-lg border border-gray-300 transition duration-150 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2'
+	'inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-medium transition duration-150 ease-in-out active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:ring-offset-zinc-900'
+
+// Neutral secondary button: the dismissive action should not shout.
+const CLOSE_BUTTON_SKIN =
+	'border border-gray-300 bg-white hover:bg-gray-50 focus-visible:ring-gray-400 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
+
+// The approval variant confirms a warning, so the confirm action carries the
+// destructive colour and the cancel action stays neutral — not the reverse.
+const APPROVE_BUTTON_SKIN =
+	'bg-red-600 shadow-sm hover:bg-red-700 focus-visible:ring-red-500 dark:bg-red-500 dark:hover:bg-red-400'
 
 // Covers the exit animation even if `animationend` never fires
 // (e.g. `animation: none` via a consumer override).
@@ -74,7 +83,7 @@ const DefaultWarningIcon = (): React.JSX.Element => (
 		viewBox='0 0 24 24'
 		aria-hidden='true'
 		focusable='false'
-		className='mr-3 h-8 w-8 fill-current'
+		className='h-6 w-6 fill-current'
 	>
 		<path d='M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM11 7h2v6h-2V7zm0 8h2v2h-2v-2z' />
 	</svg>
@@ -241,7 +250,7 @@ const ModalHeader = ({ children, className }: ModalSectionProps): React.JSX.Elem
 	return (
 		<div
 			id={titleId}
-			className={`pr-8 text-xl font-semibold text-gray-900 dark:text-gray-100 ${className ?? ''}`}
+			className={`pr-8 text-lg font-semibold tracking-tight text-gray-900 dark:text-white ${className ?? ''}`}
 		>
 			{children}
 		</div>
@@ -253,7 +262,7 @@ const ModalBody = ({ children, className }: ModalSectionProps): React.JSX.Elemen
 	return (
 		<div
 			id={descriptionId}
-			className={`mt-2 text-gray-600 dark:text-gray-300 ${className ?? ''}`}
+			className={`mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400 ${className ?? ''}`}
 		>
 			{children}
 		</div>
@@ -262,7 +271,7 @@ const ModalBody = ({ children, className }: ModalSectionProps): React.JSX.Elemen
 
 const ModalFooter = ({ children, className }: ModalSectionProps): React.JSX.Element => (
 	<div
-		className={`mt-6 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 ${className ?? ''}`}
+		className={`mt-6 flex flex-wrap items-center justify-end gap-3 ${className ?? ''}`}
 	>
 		{children}
 	</div>
@@ -474,53 +483,57 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 
 	const slots = props.classNames
 
+	// A custom background means the button is filled, so it keeps the v2 white
+	// label; otherwise it falls back to the neutral secondary skin.
 	const closeButtonClass = `${BUTTON_BASE} ${
-		props.buttonsTextColor ?? 'text-white'
+		props.closeButtonBgColor
+			? `border border-gray-300 dark:border-white/15 focus-visible:ring-gray-400 ${props.closeButtonBgColor}`
+			: CLOSE_BUTTON_SKIN
 	} ${
-		props.closeButtonBgColor ?? 'bg-red-600'
-	} dark:border-red-600 hover:bg-red-700 hover:text-green-100 focus:ring-red-500 ${
-		slots?.closeButton ?? ''
-	}`
+		props.buttonsTextColor ??
+		(props.closeButtonBgColor ? 'text-white' : 'text-gray-700 dark:text-gray-200')
+	} ${slots?.closeButton ?? ''}`
 
+	const approveBg = props.approveButtonBgColor ?? props.aprovalButtonBgColor
+	const darkApproveBg =
+		props.darkApproveButtonBgColor ?? props.darkAprovalButtonBgColor
 	const approveButtonClass = `${BUTTON_BASE} ${
 		props.buttonsTextColor ?? 'text-white'
 	} ${
-		props.approveButtonBgColor ?? props.aprovalButtonBgColor ?? 'bg-lime-600'
-	} ${
-		props.darkApproveButtonBgColor ??
-		props.darkAprovalButtonBgColor ??
-		'dark:bg-lime-600'
-	} dark:border-lime-600 hover:bg-lime-700 hover:text-green-100 focus:ring-lime-500 ${
-		slots?.approveButton ?? ''
-	}`
+		approveBg
+			? `shadow-sm focus-visible:ring-gray-400 ${approveBg}`
+			: APPROVE_BUTTON_SKIN
+	} ${darkApproveBg ?? ''} ${slots?.approveButton ?? ''}`
 
-	const messageClass = `text-lg font-semibold ${
-		props.messageTextColor ?? 'text-gray-500'
+	const messageClass = `mt-2 text-sm leading-6 ${
+		props.messageTextColor ?? 'text-gray-500 dark:text-gray-400'
 	} ${slots?.message ?? ''}`
+
+	const titleClass = 'text-lg font-semibold tracking-tight'
 
 	const renderBody = (): ReactNode => {
 		switch (variant) {
 		case 'simple':
 			return (
-				<div className='flex flex-col items-center p-6'>
-					<div
+				<div className='flex flex-col items-center text-center'>
+					<h2
 						id={titleId}
-						className={`flex text-xl font-semibold uppercase ${
-							props.successTitleColor ?? 'text-lime-600'
-						} ${props.darkSuccessTitleColor ?? 'dark:text-lime-600'} ${
+						className={`${titleClass} ${
+							props.successTitleColor ?? 'text-gray-900'
+						} ${props.darkSuccessTitleColor ?? 'dark:text-white'} ${
 							slots?.title ?? ''
 						}`}
 					>
 						{title}
-					</div>
+					</h2>
 					<div id={descriptionId} className={messageClass}>
 						{message}
 					</div>
-					<div className='mt-6 flex gap-x-4'>
+					<div className='mt-6 flex w-full justify-center'>
 						<button
 							ref={refCloseButton}
 							onClick={onCloseClick}
-							className={closeButtonClass}
+							className={`${closeButtonClass} min-w-28`}
 						>
 							{closeLabel}
 						</button>
@@ -529,32 +542,38 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 			)
 		case 'approval':
 			return (
-				<div className='flex flex-col items-center p-6'>
-					<div
+				<div className='flex flex-col items-center text-center'>
+					<span
+						className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400'
+					>
+						{props.warningIcon ?? <DefaultWarningIcon />}
+					</span>
+					<h2
 						id={titleId}
-						className={`flex items-center text-xl font-semibold mb-4 ${
-							props.warningTitleColor ?? 'text-red-500'
+						className={`${titleClass} ${
+							props.warningTitleColor ?? 'text-gray-900 dark:text-white'
 						} ${slots?.title ?? ''}`}
 					>
-						{props.warningIcon ?? <DefaultWarningIcon />} {title}
-					</div>
+						{title}
+					</h2>
 					<div id={descriptionId} className={messageClass}>
 						{message}
 					</div>
-					<div className='mt-6 flex gap-x-4'>
-						<button
-							ref={refApproveButton}
-							onClick={onApprove}
-							className={approveButtonClass}
-						>
-							{approveLabel}
-						</button>
+					{/* Cancel first so the visual order matches the tab order. */}
+					<div className='mt-6 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-center'>
 						<button
 							ref={refCloseButton}
 							onClick={onCancelClick}
-							className={closeButtonClass}
+							className={`${closeButtonClass} sm:min-w-28`}
 						>
 							{closeLabel}
+						</button>
+						<button
+							ref={refApproveButton}
+							onClick={onApprove}
+							className={`${approveButtonClass} sm:min-w-28`}
+						>
+							{approveLabel}
 						</button>
 					</div>
 				</div>
@@ -602,7 +621,7 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 					}
 					aria-label={labelledById && !props.ariaLabel ? undefined : props.ariaLabel}
 					tabIndex={-1}
-					className={`relative transform overflow-hidden rounded-2xl text-left shadow-2xl ring-1 ring-black/5 dark:ring-white/10 motion-reduce:animate-none ${
+					className={`relative transform overflow-hidden rounded-2xl text-left shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)] ring-1 ring-black/5 dark:shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] dark:ring-white/10 motion-reduce:animate-none ${
 						SIZE_CLASSES[props.size ?? 'md']
 					}${
 						props.mobileSheet
@@ -612,8 +631,8 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 				>
 					<div
 						className={`${props.modalBackground ?? 'bg-white'} ${
-							props.darkModalBackground ?? 'dark:bg-zinc-800'
-						} mx-auto px-4 pt-5 pb-4 sm:p-6 sm:pb-4`}
+							props.darkModalBackground ?? 'dark:bg-zinc-900'
+						} mx-auto p-5 sm:p-6`}
 					>
 						<ModalContext.Provider value={contextValue}>
 							{renderBody()}
@@ -625,7 +644,7 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 							type='button'
 							aria-label={props.closeButtonAriaLabel ?? 'Close dialog'}
 							onClick={onCloseClick}
-							className={`absolute right-3 top-3 rounded-lg p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-black/5 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 active:scale-95 dark:hover:bg-white/10 dark:hover:text-gray-200 ${
+							className={`absolute right-3 top-3 rounded-full p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-black/5 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 active:scale-95 dark:hover:bg-white/10 dark:hover:text-gray-200 ${
 								slots?.dismissButton ?? ''
 							}`}
 						>

@@ -1,6 +1,6 @@
 {
   "name": "react-tailwind-flex-modal",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Accessible, animated React modal built with Tailwind CSS 4 — ready-made and composable layouts, focus trap, inert background, enter/exit animations, mobile bottom sheet, dark mode, zero dependencies",
   "author": "Guillaume-da",
   "license": "MIT",
