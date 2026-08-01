@@ -4,7 +4,10 @@
   "description": "A light, accessible Modal made with Tailwind",
   "author": "Guillaume-da",
   "license": "MIT",
-  "repository": "https://github.com/Guillaume-da/react-tailwind-flex-modal",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Guillaume-da/react-tailwind-flex-modal.git"
+  },
   "keywords": [
     "react",
     "tailwind",
