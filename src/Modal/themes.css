@@ -1,0 +1,357 @@
+/**
+ * Preset theme skins.
+ *
+ * Everything here is authored in `@layer components`, which the cascade places
+ * below `utilities`. That is deliberate and load-bearing: a consumer's own
+ * utility classes — through `classNames`, through the deprecated colour props,
+ * or straight from their stylesheet — beat these rules no matter which
+ * stylesheet loads first and without needing an `!` suffix.
+ *
+ * The other half of the bargain lives in `Modal.tsx`: when a theme is active the
+ * component stops emitting its own colour utilities, because those *are*
+ * utilities and would win against everything below.
+ */
+
+@layer components {
+	/* Terminal ------------------------------------------------------------ */
+
+	.rtm-theme-terminal .rtm-panel {
+		@apply rounded-xl ring-1 ring-white/10 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.75)];
+	}
+
+	.rtm-theme-terminal .rtm-titlebar {
+		@apply border-b border-white/10 bg-[#161b22] text-white/40;
+	}
+
+	.rtm-theme-terminal .rtm-content {
+		@apply bg-[#0d1117] px-5 py-4 font-mono text-sm text-[#c9d1d9];
+	}
+
+	.rtm-theme-terminal .rtm-title {
+		@apply text-base font-bold text-white;
+	}
+
+	/* The shell prompt is punctuation, so it belongs to the presentation. */
+	.rtm-theme-terminal .rtm-title::before {
+		content: '$ ';
+		color: #3fb950;
+	}
+
+	.rtm-theme-terminal .rtm-message {
+		@apply text-sm leading-6 text-[#8b949e];
+	}
+
+	/* Free content markup gets the palette without any extra API. */
+	.rtm-theme-terminal .rtm-content em {
+		@apply not-italic text-[#d29922];
+	}
+
+	.rtm-theme-terminal .rtm-content strong {
+		@apply font-bold text-white;
+	}
+
+	.rtm-theme-terminal .rtm-icon {
+		@apply rounded-md bg-[#f8514926] text-[#f85149];
+	}
+
+	.rtm-theme-terminal .rtm-close {
+		@apply rounded-md border border-white/15 bg-white/5 text-[#c9d1d9] hover:bg-white/10;
+	}
+
+	.rtm-theme-terminal .rtm-approve {
+		@apply rounded-md bg-[#238636] font-semibold text-white hover:bg-[#2ea043];
+	}
+
+	/* Brutalist ----------------------------------------------------------- */
+
+	.rtm-theme-brutalist .rtm-panel {
+		@apply rounded-xl border-2 border-[#12102e] shadow-[6px_6px_0_0_#12102e];
+	}
+
+	.rtm-theme-brutalist .rtm-content {
+		@apply bg-white p-6 text-[#12102e];
+	}
+
+	.rtm-theme-brutalist .rtm-title {
+		@apply text-2xl font-extrabold tracking-[-0.02em] text-[#12102e];
+	}
+
+	.rtm-theme-brutalist .rtm-message {
+		@apply text-sm leading-6 text-[#4a4470];
+	}
+
+	.rtm-theme-brutalist .rtm-icon {
+		@apply rounded-md border-2 border-[#ff3d00] bg-[#ff3d001a] text-[#ff3d00];
+	}
+
+	.rtm-theme-brutalist .rtm-close {
+		@apply h-11 rounded-md border-2 border-[#12102e] font-semibold text-[#12102e] hover:bg-[#12102e] hover:text-[#ffdd00];
+	}
+
+	.rtm-theme-brutalist .rtm-approve {
+		@apply h-11 rounded-md border-2 border-[#12102e] bg-[#ff3d00] font-semibold text-white shadow-[3px_3px_0_0_#12102e];
+	}
+
+	.rtm-theme-brutalist .rtm-dismiss {
+		@apply rounded-md text-[#5a5382] hover:bg-[#12102e1a];
+	}
+
+	.dark .rtm-theme-brutalist .rtm-panel {
+		@apply border-[#ffdd00] shadow-[6px_6px_0_0_#ff3d00];
+	}
+
+	.dark .rtm-theme-brutalist .rtm-content {
+		@apply bg-[#12102e] text-[#f4f2ff];
+	}
+
+	.dark .rtm-theme-brutalist .rtm-title {
+		@apply text-[#f4f2ff];
+	}
+
+	.dark .rtm-theme-brutalist .rtm-message {
+		@apply text-[#8b84c4];
+	}
+
+	.dark .rtm-theme-brutalist .rtm-close {
+		@apply border-[#ffdd00] text-[#ffdd00] hover:bg-[#ffdd00] hover:text-[#12102e];
+	}
+
+	/* Glass --------------------------------------------------------------- */
+
+	.rtm-theme-glass .rtm-backdrop {
+		@apply bg-slate-900/30 backdrop-blur-xl;
+	}
+
+	.rtm-theme-glass .rtm-panel {
+		@apply rounded-3xl border border-white/40 shadow-[0_20px_70px_-20px_rgba(15,23,42,0.45)];
+	}
+
+	.rtm-theme-glass .rtm-content {
+		@apply bg-white/70 p-6 backdrop-blur-2xl;
+	}
+
+	.rtm-theme-glass .rtm-title {
+		@apply text-lg font-semibold tracking-tight text-slate-900;
+	}
+
+	.rtm-theme-glass .rtm-message {
+		@apply text-sm leading-6 text-slate-600;
+	}
+
+	.rtm-theme-glass .rtm-icon {
+		@apply rounded-full bg-white/70 text-rose-500 ring-1 ring-white/60;
+	}
+
+	.rtm-theme-glass .rtm-close {
+		@apply rounded-full border border-white/60 bg-white/50 text-slate-700 hover:bg-white/80;
+	}
+
+	.rtm-theme-glass .rtm-approve {
+		@apply rounded-full bg-slate-900/85 text-white hover:bg-slate-900;
+	}
+
+	.rtm-theme-glass .rtm-dismiss {
+		@apply rounded-full text-slate-500 hover:bg-white/60;
+	}
+
+	.dark .rtm-theme-glass .rtm-panel {
+		@apply border-white/15;
+	}
+
+	.dark .rtm-theme-glass .rtm-content {
+		@apply bg-slate-900/60;
+	}
+
+	.dark .rtm-theme-glass .rtm-title {
+		@apply text-white;
+	}
+
+	.dark .rtm-theme-glass .rtm-message {
+		@apply text-slate-300;
+	}
+
+	.dark .rtm-theme-glass .rtm-close {
+		@apply border-white/20 bg-white/10 text-slate-100 hover:bg-white/20;
+	}
+
+	.dark .rtm-theme-glass .rtm-approve {
+		@apply bg-white text-slate-900 hover:bg-slate-100;
+	}
+
+	/* Editorial ----------------------------------------------------------- */
+
+	.rtm-theme-editorial .rtm-panel {
+		@apply rounded-none border border-[#e5ded0] shadow-[0_18px_50px_-18px_rgba(60,50,35,0.35)];
+	}
+
+	.rtm-theme-editorial .rtm-content {
+		@apply bg-[#fbf8f1] p-8;
+	}
+
+	.rtm-theme-editorial .rtm-title {
+		@apply font-serif text-2xl font-normal tracking-tight text-[#2b2419];
+	}
+
+	.rtm-theme-editorial .rtm-message {
+		@apply mt-3 border-t border-[#e5ded0] pt-3 text-sm leading-7 text-[#6b6151];
+	}
+
+	.rtm-theme-editorial .rtm-icon {
+		@apply rounded-none border border-[#b4442f] bg-transparent text-[#b4442f];
+	}
+
+	.rtm-theme-editorial .rtm-close {
+		@apply rounded-none border border-[#cdc3b0] text-xs uppercase tracking-[0.18em] text-[#6b6151] hover:bg-[#efe9dc];
+	}
+
+	.rtm-theme-editorial .rtm-approve {
+		@apply rounded-none bg-[#2b2419] text-xs uppercase tracking-[0.18em] text-[#fbf8f1] hover:bg-[#453b2b];
+	}
+
+	.rtm-theme-editorial .rtm-dismiss {
+		@apply rounded-none text-[#9a8f7c] hover:bg-[#efe9dc];
+	}
+
+	.dark .rtm-theme-editorial .rtm-panel {
+		@apply border-[#3a3428];
+	}
+
+	.dark .rtm-theme-editorial .rtm-content {
+		@apply bg-[#1d1a14];
+	}
+
+	.dark .rtm-theme-editorial .rtm-title {
+		@apply text-[#f2ece0];
+	}
+
+	.dark .rtm-theme-editorial .rtm-message {
+		@apply border-[#3a3428] text-[#a89d88];
+	}
+
+	.dark .rtm-theme-editorial .rtm-close {
+		@apply border-[#4a4234] text-[#c9bfa9] hover:bg-[#2a2620];
+	}
+
+	.dark .rtm-theme-editorial .rtm-approve {
+		@apply bg-[#f2ece0] text-[#1d1a14] hover:bg-white;
+	}
+
+	/* Neon ---------------------------------------------------------------- */
+
+	.rtm-theme-neon .rtm-backdrop {
+		@apply bg-[#05010f]/80 backdrop-blur-sm;
+	}
+
+	.rtm-theme-neon .rtm-panel {
+		@apply rounded-2xl ring-1 ring-fuchsia-400/40 shadow-[0_0_60px_-10px_rgba(217,70,239,0.55)];
+	}
+
+	.rtm-theme-neon .rtm-content {
+		@apply bg-[#0b0420] p-6;
+	}
+
+	.rtm-theme-neon .rtm-title {
+		@apply text-lg font-semibold tracking-tight text-fuchsia-100;
+	}
+
+	.rtm-theme-neon .rtm-message {
+		@apply text-sm leading-6 text-violet-300/80;
+	}
+
+	.rtm-theme-neon .rtm-icon {
+		@apply rounded-full bg-fuchsia-500/15 text-fuchsia-300 ring-1 ring-fuchsia-400/40;
+	}
+
+	.rtm-theme-neon .rtm-close {
+		@apply rounded-full border border-violet-400/30 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20;
+	}
+
+	.rtm-theme-neon .rtm-approve {
+		@apply rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 font-semibold text-white shadow-[0_0_24px_-4px_rgba(217,70,239,0.8)];
+	}
+
+	.rtm-theme-neon .rtm-dismiss {
+		@apply rounded-full text-violet-300/70 hover:bg-violet-500/20 hover:text-violet-100;
+	}
+
+	/* Minimal ------------------------------------------------------------- */
+
+	.rtm-theme-minimal .rtm-backdrop {
+		@apply bg-white/70 backdrop-blur-[2px];
+	}
+
+	.rtm-theme-minimal .rtm-panel {
+		@apply rounded-none shadow-none;
+	}
+
+	.rtm-theme-minimal .rtm-content {
+		@apply bg-white px-10 py-12;
+	}
+
+	.rtm-theme-minimal .rtm-title {
+		@apply text-xl font-medium tracking-tight text-black;
+	}
+
+	.rtm-theme-minimal .rtm-message {
+		@apply mt-4 text-sm leading-7 text-neutral-500;
+	}
+
+	.rtm-theme-minimal .rtm-icon {
+		@apply hidden;
+	}
+
+	.rtm-theme-minimal .rtm-close {
+		@apply rounded-none text-neutral-500 underline decoration-neutral-300 underline-offset-4 hover:text-black;
+	}
+
+	.rtm-theme-minimal .rtm-approve {
+		@apply rounded-none bg-black text-white hover:bg-neutral-800;
+	}
+
+	.rtm-theme-minimal .rtm-dismiss {
+		@apply rounded-none text-neutral-400 hover:text-black;
+	}
+
+	.dark .rtm-theme-minimal .rtm-backdrop {
+		@apply bg-black/70;
+	}
+
+	.dark .rtm-theme-minimal .rtm-content {
+		@apply bg-[#0a0a0a];
+	}
+
+	.dark .rtm-theme-minimal .rtm-title {
+		@apply text-white;
+	}
+
+	.dark .rtm-theme-minimal .rtm-message {
+		@apply text-neutral-400;
+	}
+
+	.dark .rtm-theme-minimal .rtm-close {
+		@apply text-neutral-400 decoration-neutral-600 hover:text-white;
+	}
+
+	.dark .rtm-theme-minimal .rtm-approve {
+		@apply bg-white text-black hover:bg-neutral-200;
+	}
+
+	/* Caret --------------------------------------------------------------- */
+
+	.rtm-caret {
+		display: inline-block;
+		width: 0.55em;
+		height: 1.05em;
+		margin-left: 0.15em;
+		vertical-align: text-bottom;
+		background: #3fb950;
+		animation: var(--animate-caret-blink);
+	}
+
+	/* A component-layer rule cannot use the `motion-reduce:` variant. */
+	@media (prefers-reduced-motion: reduce) {
+		.rtm-caret {
+			animation: none;
+		}
+	}
+}

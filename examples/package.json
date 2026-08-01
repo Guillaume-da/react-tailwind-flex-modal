@@ -1,5 +1,5 @@
 {
-  "name": "react-tailwind-flex-modal-examples",
+  "name": "tailwind-react-modal-examples",
   "version": "2.0.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
   "dependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-tailwind-flex-modal": "file:.."
+    "tailwind-react-modal": "file:.."
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

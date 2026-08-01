@@ -1,58 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Modal, useModal } from 'react-tailwind-flex-modal'
+import { Modal, modalThemes, modalThemeNames, useModal } from 'tailwind-react-modal'
 import Form from './components/Form'
 
-// The library ships neutral defaults on purpose. Everything below is the
-// Misregister design system layered on top through `classNames` and the two
-// background props — nothing here changes what other consumers get.
-const panel =
-  'rounded-xl! border-2 border-ds-ink shadow-ink! ring-0! dark:border-ds-base dark:shadow-vermillion!'
-
-const title =
-  'font-display text-2xl font-extrabold tracking-[-0.02em] text-ds-ink dark:text-ds-on-panel'
-
-const message = 'text-ds-ink-soft dark:text-ds-on-panel-soft'
-
-// btn-secondary: outlined, fills with ink on hover.
-const closeButton =
-  'h-11! rounded-md! border-2! border-ds-ink! bg-transparent! font-semibold text-ds-ink! hover:bg-ds-ink! hover:text-ds-base! dark:border-ds-base! dark:text-ds-base!'
-
-// The destructive confirm takes a vermillion flat fill — vermillion is a fill
-// colour only in this system, never text.
-const approveButton =
-  'h-11! rounded-md! border-2! border-ds-ink! bg-ds-vermillion! font-semibold text-white! shadow-ink! hover:bg-ds-vermillion!'
-
-const icon =
-  'rounded-md! border-2 border-ds-vermillion bg-ds-vermillion/10! text-ds-vermillion! dark:border-ds-vermillion dark:bg-ds-vermillion/15! dark:text-ds-vermillion!'
-
-const dismissButton =
-  'rounded-md! text-ds-ink-faint hover:bg-ds-ink/10 dark:text-ds-on-panel-soft dark:hover:bg-ds-base/15'
-
-const modalTheme = {
-  classNames: {
-    panel,
-    title,
-    message,
-    icon,
-    closeButton,
-    approveButton,
-    dismissButton
-  },
-  modalBackground: 'bg-ds-surface',
-  darkModalBackground: 'dark:bg-ds-ink'
-}
-
-const WarningIcon = () => (
-  <svg
-    viewBox='0 0 24 24'
-    aria-hidden='true'
-    focusable='false'
-    className='h-6 w-6 fill-ds-vermillion'
-  >
-    <path d='M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM11 7h2v6h-2V7zm0 8h2v2h-2v-2z' />
-  </svg>
-)
-
+// The page keeps its own design system; the modals now use the presets the
+// library ships, picked from the toolbar. That is the whole point of the demo:
+// one prop, no `classNames` blob.
 const cardClass =
   'group flex flex-col items-start gap-3 rounded-xl border-2 border-ds-ink bg-ds-surface p-6 text-left shadow-ink transition duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_0_var(--color-ds-vermillion)] focus:outline-none focus-visible:outline-3 focus-visible:outline-ds-ink focus-visible:outline-offset-3 dark:border-ds-base dark:bg-ds-ink dark:shadow-vermillion'
 
@@ -89,6 +41,12 @@ const demos = [
     tag: 'variant'
   },
   {
+    id: 'terminal',
+    title: 'Terminal',
+    text: 'Chrome de fenêtre, points de feu, curseur clignotant.',
+    tag: 'theme'
+  },
+  {
     id: 'composable',
     title: 'Composable',
     text: 'Header, Body et Footer, pilotés par useModal.',
@@ -102,11 +60,17 @@ const demos = [
   }
 ]
 
+const Prompt = () => (
+  <span className='text-[#3fb950]'>guillaume@web:~$ </span>
+)
+
 function App() {
   const [variant, setVariant] = useState(null)
   const [dark, setDark] = useState(false)
+  const [theme, setTheme] = useState('brutalist')
   const composable = useModal()
   const sheet = useModal()
+  const terminal = useModal()
 
   // The library ships `darkMode: 'class'`, so the demo drives it explicitly
   // instead of following the OS — that keeps the screenshots reproducible.
@@ -120,6 +84,7 @@ function App() {
     simple: () => setVariant('simple'),
     approval: () => setVariant('approval'),
     form: () => setVariant('form'),
+    terminal: terminal.open,
     composable: composable.open,
     sheet: sheet.open
   }
@@ -127,7 +92,7 @@ function App() {
   return (
     <div className='min-h-screen bg-ds-base text-ds-ink dark:bg-ds-ink dark:text-ds-on-panel'>
       <Modal
-        {...modalTheme}
+        theme={theme}
         variant='simple'
         isOpen={variant === 'simple'}
         title='Tout est en place'
@@ -137,20 +102,19 @@ function App() {
       />
 
       <Modal
-        {...modalTheme}
+        theme={theme}
         variant='approval'
         isOpen={variant === 'approval'}
         title='Supprimer ce dépôt ?'
         message='Cette action retire définitivement le dépôt et tous ses fichiers. Elle est irréversible.'
         approveLabel='Supprimer'
         closeLabel='Annuler'
-        warningIcon={<WarningIcon />}
         onApprove={close}
         onClose={close}
       />
 
       <Modal
-        {...modalTheme}
+        theme={theme}
         variant='form'
         isOpen={variant === 'form'}
         ariaLabel='Formulaire employé'
@@ -162,13 +126,61 @@ function App() {
       />
 
       <Modal
-        {...modalTheme}
+        theme='terminal'
+        isOpen={terminal.isOpen}
+        onClose={terminal.close}
+        titleBarLabel='guillaume@web — qa & dev'
+        ariaLabel='Session terminal'
+        size='lg'
+      >
+        <Modal.Body className='space-y-1'>
+          <div>
+            <Prompt />
+            whoami
+          </div>
+          <div className='text-lg'>
+            <strong>QA &amp; Web Developer</strong>
+          </div>
+          <div>
+            <Prompt />
+            echo $motto
+          </div>
+          <div>
+            <em>
+              &quot;Ça marche sur ma machine — et sur les vôtres, j&apos;ai
+              vérifié.&quot;
+            </em>
+          </div>
+          <div>
+            <Prompt />
+            npx playwright test
+          </div>
+          <div>
+            <span className='text-[#3fb950]'>✓ 128 passed</span>{' '}
+            <span className='text-[#6e7681]'>
+              (chromium · firefox · webkit)
+            </span>
+          </div>
+          <div>
+            <span className='text-[#3fb950]'>stack</span>:{' '}
+            <span className='text-[#79c0ff]'>
+              Next.js React TypeScript C# Azure
+            </span>
+            {/* `.rtm-caret` ships with the library; the variants render it
+                automatically, free content asks for it. */}
+            <span aria-hidden='true' className='rtm-caret' />
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        theme={theme}
         isOpen={composable.isOpen}
         onClose={composable.close}
         size='lg'
       >
-        <Modal.Header className={title}>Modal composable</Modal.Header>
-        <Modal.Body className={message}>
+        <Modal.Header>Modal composable</Modal.Header>
+        <Modal.Body>
           Contenu libre construit avec Modal.Header, Modal.Body et Modal.Footer,
           piloté par le hook useModal. Fermez-le avec le X, Échap, le fond ou les
           boutons ci-dessous.
@@ -184,14 +196,14 @@ function App() {
       </Modal>
 
       <Modal
-        {...modalTheme}
+        theme={theme}
         isOpen={sheet.isOpen}
         onClose={sheet.close}
         mobileSheet
         size='sm'
       >
-        <Modal.Header className={title}>Feuille mobile</Modal.Header>
-        <Modal.Body className={message}>
+        <Modal.Header>Feuille mobile</Modal.Header>
+        <Modal.Body>
           Réduisez la fenêtre sous le breakpoint sm : le modal s&apos;ancre au
           bord bas et glisse vers le haut.
         </Modal.Body>
@@ -201,7 +213,7 @@ function App() {
         <div className='flex items-start justify-between gap-6'>
           <div>
             <p className={`${flagClass} mb-6`}>
-              react-tailwind-flex-modal · v2.2
+              tailwind-react-modal · v3
             </p>
             <h1 className='font-display max-w-[13ch] text-[clamp(3rem,9vw,7.5rem)] leading-[0.86] font-extrabold tracking-[-0.045em]'>
               Modals
@@ -209,9 +221,9 @@ function App() {
             </h1>
             <p className='mt-8 max-w-[60ch] text-lg text-ds-ink-soft dark:text-ds-on-panel-soft'>
               Piège de focus, arrière-plan inerte, verrou de défilement et
-              animations d&apos;entrée et de sortie. Le style ci-dessous passe
-              entièrement par <code className='font-mono'>classNames</code> — les
-              défauts de la librairie restent neutres.
+              animations d&apos;entrée et de sortie. Sept looks livrés avec la
+              librairie — <code className='font-mono'>theme=&quot;terminal&quot;</code>,
+              rien à configurer.
             </p>
           </div>
           <button
@@ -223,10 +235,25 @@ function App() {
           </button>
         </div>
 
-        <div className='mt-16 flex flex-wrap gap-6 border-t-2 border-ds-ink pt-6 dark:border-ds-base'>
-          <span className={flagClass}>--variants 3</span>
-          <span className={flagClass}>--deps 0</span>
-          <span className={flagClass}>--a11y focus-trap · inert</span>
+        <div className='mt-16 border-t-2 border-ds-ink pt-6 dark:border-ds-base'>
+          <p className={flagClass}>--theme</p>
+          <div className='mt-3 flex flex-wrap gap-2'>
+            {modalThemeNames.map((name) => (
+              <button
+                key={name}
+                type='button'
+                onClick={() => setTheme(name)}
+                title={modalThemes[name].description}
+                className={`rounded-full border-2 px-4 py-1.5 font-mono text-[0.6875rem] uppercase tracking-[0.1em] transition ${
+                  theme === name
+                    ? 'border-ds-ink bg-ds-ink text-ds-base dark:border-ds-base dark:bg-ds-base dark:text-ds-ink'
+                    : 'border-ds-ink text-ds-ink-soft hover:bg-ds-ink/10 dark:border-ds-base dark:text-ds-on-panel-soft'
+                }`}
+              >
+                {modalThemes[name].label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className='mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3'>

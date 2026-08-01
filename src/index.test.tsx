@@ -1,6 +1,7 @@
 import { render, fireEvent, cleanup, act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Modal, useModal } from '.'
+import { readFileSync } from 'node:fs'
+import { Modal, modalThemeNames, modalThemes, useModal } from '.'
 
 afterEach(() => {
 	cleanup()
@@ -730,6 +731,232 @@ describe('Modal', () => {
 			)
 			fireEvent.click(getByLabelText('Close dialog'))
 			expect(onClose).toHaveBeenCalledTimes(1)
+		})
+	})
+
+	describe('themes', () => {
+		// The stakes: the neutral skin was pulled out of the JSX into constants so
+		// themes could suppress it. If that extraction drifted, every existing
+		// install changes appearance silently.
+		it('renders neutral identically to passing no theme at all', () => {
+			// `useId` differs between the two renders, so blank every generated id
+			// and the aria attributes pointing at them before comparing.
+			const strip = (markup: string): string =>
+				markup.replace(
+					/(id|aria-labelledby|aria-describedby)="[^"]*"/g,
+					'$1="ID"'
+				)
+
+			const bare = render(
+				<Modal
+					{...baseProps}
+					variant='approval'
+					title='T'
+					message='M'
+					approveLabel='Y'
+					usePortal={false}
+				/>
+			)
+			const bareHtml = strip(bare.container.innerHTML)
+			cleanup()
+
+			const themed = render(
+				<Modal
+					{...baseProps}
+					variant='approval'
+					title='T'
+					message='M'
+					approveLabel='Y'
+					usePortal={false}
+					theme='neutral'
+				/>
+			)
+			expect(strip(themed.container.innerHTML)).toBe(bareHtml)
+		})
+
+		it.each(modalThemeNames)('renders the %s theme', (name) => {
+			const { getByRole } = render(
+				<Modal {...baseProps} variant='simple' title='T' message='M' theme={name} />
+			)
+			const dialog = getByRole('dialog')
+			expect(dialog).toBeInTheDocument()
+			expect(dialog.getAttribute('data-rtm-theme')).toBe(name)
+		})
+
+		it('puts the theme class on the root and drops the neutral skin', () => {
+			const { getByRole } = render(
+				<Modal {...baseProps} variant='simple' title='T' theme='terminal' />
+			)
+			const dialog = getByRole('dialog')
+			const root = dialog.closest('.rtm-root')
+			expect(root?.className).toContain('rtm-theme-terminal')
+			// The neutral panel skin must not be emitted, or it would beat the
+			// preset — utilities outrank the components layer.
+			expect(dialog.className).not.toContain('ring-black/5')
+			expect(dialog.className).toContain('rtm-panel')
+		})
+
+		it('keeps the neutral skin when no theme is given', () => {
+			const { getByRole } = render(<Modal {...baseProps} variant='simple' title='T' />)
+			expect(getByRole('dialog').className).toContain('ring-black/5')
+		})
+
+		it('appends classNames after a theme so consumer classes win', () => {
+			const { getByRole } = render(
+				<Modal
+					{...baseProps}
+					variant='simple'
+					title='T'
+					theme='neon'
+					classNames={{ panel: 'consumer-panel' }}
+				/>
+			)
+			const className = getByRole('dialog').className
+			expect(className).toContain('consumer-panel')
+			expect(className.trim().endsWith('consumer-panel')).toBe(true)
+		})
+
+		it('lets the deprecated colour props override a theme', () => {
+			const { getByText } = render(
+				<Modal
+					{...baseProps}
+					variant='approval'
+					title='T'
+					approveLabel='Yes'
+					theme='brutalist'
+					approveButtonBgColor='consumer-approve-bg'
+					messageTextColor='consumer-message'
+					message='M'
+				/>
+			)
+			expect(getByText('Yes').className).toContain('consumer-approve-bg')
+			expect(getByText('M').className).toContain('consumer-message')
+		})
+
+		it('reaches the content wrapper through the content slot', () => {
+			const { getByRole } = render(
+				<Modal
+					{...baseProps}
+					variant='simple'
+					title='T'
+					classNames={{ content: 'consumer-content' }}
+				/>
+			)
+			expect(
+				getByRole('dialog').querySelector('.rtm-content')?.className
+			).toContain('consumer-content')
+		})
+
+		it('falls back to neutral for an unknown theme name', () => {
+			const { getByRole } = render(
+				// @ts-expect-error deliberately off-contract, as a JS consumer would be
+				<Modal {...baseProps} variant='simple' title='T' theme='nope' />
+			)
+			expect(getByRole('dialog').className).toContain('ring-black/5')
+		})
+
+		it('keeps the registry and the stylesheet in lockstep', () => {
+			const css = readFileSync('src/Modal/themes.css', 'utf8')
+			for (const name of modalThemeNames) {
+				const { className } = modalThemes[name]
+				if (!className) continue
+				expect(css).toContain(`.${className} `)
+			}
+		})
+	})
+
+	describe('title bar', () => {
+		it('is off by default and on for the terminal theme', () => {
+			const { queryByTestId, rerender } = render(
+				<Modal {...baseProps} variant='simple' title='T' />
+			)
+			expect(document.querySelector('.rtm-titlebar')).toBeNull()
+
+			rerender(<Modal {...baseProps} variant='simple' title='T' theme='terminal' />)
+			expect(document.querySelector('.rtm-titlebar')).not.toBeNull()
+			expect(queryByTestId('nothing')).toBeNull()
+		})
+
+		it('replaces the corner X with the red light', () => {
+			const onClose = vi.fn()
+			const { getByLabelText, getByRole } = render(
+				<Modal
+					{...baseProps}
+					variant='simple'
+					title='T'
+					theme='terminal'
+					onClose={onClose}
+				/>
+			)
+			const dismiss = getByLabelText('Close dialog')
+			// The X carries an svg; the traffic light does not.
+			expect(dismiss.querySelector('svg')).toBeNull()
+			expect(getByRole('dialog').querySelectorAll('[aria-label="Close dialog"]'))
+				.toHaveLength(1)
+
+			fireEvent.click(dismiss)
+			expect(onClose).toHaveBeenCalledTimes(1)
+		})
+
+		it('can be forced on and off regardless of the theme', () => {
+			const { rerender } = render(
+				<Modal {...baseProps} variant='simple' title='T' titleBar />
+			)
+			expect(document.querySelector('.rtm-titlebar')).not.toBeNull()
+
+			rerender(
+				<Modal {...baseProps} variant='simple' title='T' theme='terminal' titleBar={false} />
+			)
+			expect(document.querySelector('.rtm-titlebar')).toBeNull()
+		})
+
+		it('renders a custom node in place of the built-in bar', () => {
+			const { getByTestId } = render(
+				<Modal
+					{...baseProps}
+					variant='simple'
+					title='T'
+					titleBar={<div data-testid='custom-bar' />}
+				/>
+			)
+			expect(getByTestId('custom-bar')).toBeInTheDocument()
+		})
+
+		it('labels the bar with titleBarLabel, falling back to title', () => {
+			// `title` also renders as the variant heading, so scope to the bar.
+			const barText = (): string | undefined =>
+				document.querySelector('.rtm-titlebar span:last-of-type')?.textContent ??
+				undefined
+
+			const { rerender } = render(
+				<Modal {...baseProps} variant='simple' title='Fallback' titleBar />
+			)
+			expect(barText()).toBe('Fallback')
+
+			rerender(
+				<Modal
+					{...baseProps}
+					variant='simple'
+					title='Fallback'
+					titleBar
+					titleBarLabel='Explicit'
+				/>
+			)
+			expect(barText()).toBe('Explicit')
+		})
+	})
+
+	describe('caret', () => {
+		it('is rendered for terminal only, and hidden from assistive tech', () => {
+			const { rerender } = render(
+				<Modal {...baseProps} variant='simple' title='T' message='M' theme='terminal' />
+			)
+			const caret = document.querySelector('[data-rtm-caret]')
+			expect(caret).not.toBeNull()
+			expect(caret?.getAttribute('aria-hidden')).toBe('true')
+
+			rerender(<Modal {...baseProps} variant='simple' title='T' message='M' theme='glass' />)
+			expect(document.querySelector('[data-rtm-caret]')).toBeNull()
 		})
 	})
 
