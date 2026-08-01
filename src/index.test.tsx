@@ -1,6 +1,6 @@
-import { render, fireEvent, cleanup } from '@testing-library/react'
+import { render, fireEvent, cleanup, act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Modal } from '.'
+import { Modal, useModal } from '.'
 
 afterEach(() => {
 	cleanup()
@@ -103,7 +103,7 @@ describe('Modal', () => {
 
 		it('ships an inline warning icon, with no react-icons dependency', () => {
 			const { container } = render(
-				<Modal {...approvalProps} usePortal={false} />
+				<Modal {...approvalProps} usePortal={false} showCloseButton={false} />
 			)
 			expect(container.querySelector('svg')).toBeInTheDocument()
 		})
@@ -113,6 +113,7 @@ describe('Modal', () => {
 				<Modal
 					{...approvalProps}
 					usePortal={false}
+					showCloseButton={false}
 					warningIcon={<i data-testid='custom-icon' />}
 				/>
 			)
@@ -366,21 +367,36 @@ describe('Modal', () => {
 		})
 
 		it('wraps Tab from the last focusable back to the first', () => {
-			const { getByText } = render(
+			const { getByText, getByLabelText } = render(
 				<Modal {...baseProps} variant='approval' approveLabel='Yes' />
 			)
-			getByText('Close').focus()
+			// DOM order inside the dialog: approve, close, then the X button.
+			getByLabelText('Close dialog').focus()
 			fireEvent.keyDown(document, { key: 'Tab' })
 			expect(getByText('Yes')).toHaveFocus()
 		})
 
 		it('wraps Shift+Tab from the first focusable back to the last', () => {
-			const { getByText } = render(
+			const { getByText, getByLabelText } = render(
 				<Modal {...baseProps} variant='approval' approveLabel='Yes' />
 			)
 			getByText('Yes').focus()
 			fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
-			expect(getByText('Close')).toHaveFocus()
+			expect(getByLabelText('Close dialog')).toHaveFocus()
+		})
+
+		it('keeps the v2.0 tab cycle when showCloseButton is false', () => {
+			const { getByText } = render(
+				<Modal
+					{...baseProps}
+					variant='approval'
+					approveLabel='Yes'
+					showCloseButton={false}
+				/>
+			)
+			getByText('Close').focus()
+			fireEvent.keyDown(document, { key: 'Tab' })
+			expect(getByText('Yes')).toHaveFocus()
 		})
 	})
 
@@ -397,6 +413,32 @@ describe('Modal', () => {
 		it('does not lock while closed', () => {
 			render(<Modal {...baseProps} variant='simple' isOpen={false} />)
 			expect(document.body.style.overflow).not.toBe('hidden')
+		})
+
+		it('compensates the scrollbar width to avoid a layout shift', () => {
+			const originalDescriptor = Object.getOwnPropertyDescriptor(
+				window,
+				'innerWidth'
+			)
+			Object.defineProperty(window, 'innerWidth', {
+				value: 1024,
+				configurable: true
+			})
+			Object.defineProperty(document.documentElement, 'clientWidth', {
+				value: 1009,
+				configurable: true
+			})
+			try {
+				const { unmount } = render(<Modal {...baseProps} variant='simple' />)
+				expect(document.body.style.paddingRight).toBe('15px')
+				unmount()
+				expect(document.body.style.paddingRight).toBe('')
+			} finally {
+				Reflect.deleteProperty(document.documentElement, 'clientWidth')
+				if (originalDescriptor) {
+					Object.defineProperty(window, 'innerWidth', originalDescriptor)
+				}
+			}
 		})
 	})
 
@@ -436,6 +478,262 @@ describe('Modal', () => {
 			)
 			fireEvent.click(getByTestId('rtfm-backdrop'))
 			expect(onClose).not.toHaveBeenCalled()
+		})
+	})
+
+	describe('dismiss button (X)', () => {
+		it('is rendered by default and calls onClose', () => {
+			const onClose = vi.fn()
+			const { getByLabelText } = render(
+				<Modal {...baseProps} variant='simple' onClose={onClose} />
+			)
+			fireEvent.click(getByLabelText('Close dialog'))
+			expect(onClose).toHaveBeenCalledTimes(1)
+		})
+
+		it('honours a custom closeButtonAriaLabel', () => {
+			const { getByLabelText } = render(
+				<Modal
+					{...baseProps}
+					variant='simple'
+					closeButtonAriaLabel='Fermer'
+				/>
+			)
+			expect(getByLabelText('Fermer')).toBeInTheDocument()
+		})
+
+		it('is absent when showCloseButton is false', () => {
+			const { queryByLabelText } = render(
+				<Modal {...baseProps} variant='simple' showCloseButton={false} />
+			)
+			expect(queryByLabelText('Close dialog')).not.toBeInTheDocument()
+		})
+
+		it('does not steal the initial focus from the footer close button', () => {
+			const { getByText } = render(<Modal {...baseProps} variant='simple' />)
+			expect(getByText('Close')).toHaveFocus()
+		})
+	})
+
+	describe('exit animation', () => {
+		it('keeps the dialog mounted until the exit animation ends', () => {
+			const { rerender, getByRole, queryByRole } = render(
+				<Modal {...baseProps} variant='simple' title='Bye' isOpen />
+			)
+			rerender(
+				<Modal {...baseProps} variant='simple' title='Bye' isOpen={false} />
+			)
+			const dialog = getByRole('dialog')
+			expect(dialog).toBeInTheDocument()
+			fireEvent.animationEnd(dialog)
+			expect(queryByRole('dialog')).not.toBeInTheDocument()
+		})
+
+		it('unmounts via the fallback timer when animationend never fires', () => {
+			vi.useFakeTimers()
+			try {
+				const { rerender, getByRole, queryByRole } = render(
+					<Modal {...baseProps} variant='simple' isOpen />
+				)
+				rerender(<Modal {...baseProps} variant='simple' isOpen={false} />)
+				expect(getByRole('dialog')).toBeInTheDocument()
+				act(() => {
+					vi.advanceTimersByTime(500)
+				})
+				expect(queryByRole('dialog')).not.toBeInTheDocument()
+			} finally {
+				vi.useRealTimers()
+			}
+		})
+
+		it('applies the exit animation classes while closing', () => {
+			const { rerender, getByRole, getByTestId } = render(
+				<Modal {...baseProps} variant='simple' isOpen />
+			)
+			rerender(<Modal {...baseProps} variant='simple' isOpen={false} />)
+			expect(getByRole('dialog').className).toContain('animate-pop-out')
+			expect(getByTestId('rtfm-backdrop').previousElementSibling?.className)
+				.toContain('animate-fade-out')
+		})
+
+		it('honours a custom exitAnimation class', () => {
+			const { rerender, getByRole } = render(
+				<Modal
+					{...baseProps}
+					variant='simple'
+					isOpen
+					exitAnimation='animate-fade-out'
+				/>
+			)
+			rerender(
+				<Modal
+					{...baseProps}
+					variant='simple'
+					isOpen={false}
+					exitAnimation='animate-fade-out'
+				/>
+			)
+			expect(getByRole('dialog').className).toContain('animate-fade-out')
+		})
+
+		it('closes immediately when the user prefers reduced motion', () => {
+			vi.stubGlobal(
+				'matchMedia',
+				vi.fn().mockReturnValue({ matches: true })
+			)
+			try {
+				const { rerender, queryByRole } = render(
+					<Modal {...baseProps} variant='simple' isOpen />
+				)
+				rerender(<Modal {...baseProps} variant='simple' isOpen={false} />)
+				expect(queryByRole('dialog')).not.toBeInTheDocument()
+			} finally {
+				vi.unstubAllGlobals()
+			}
+		})
+	})
+
+	describe('inert background', () => {
+		it('marks the siblings of the portal inert while open', () => {
+			const sibling = document.createElement('div')
+			document.body.appendChild(sibling)
+			const { unmount } = render(<Modal {...baseProps} variant='simple' />)
+			expect(sibling).toHaveAttribute('inert')
+			unmount()
+			expect(sibling).not.toHaveAttribute('inert')
+			document.body.removeChild(sibling)
+		})
+
+		it('leaves elements that were already inert untouched on close', () => {
+			const sibling = document.createElement('div')
+			sibling.setAttribute('inert', '')
+			document.body.appendChild(sibling)
+			const { unmount } = render(<Modal {...baseProps} variant='simple' />)
+			unmount()
+			expect(sibling).toHaveAttribute('inert')
+			document.body.removeChild(sibling)
+		})
+
+		it('does nothing when usePortal is false', () => {
+			const sibling = document.createElement('div')
+			document.body.appendChild(sibling)
+			render(<Modal {...baseProps} variant='simple' usePortal={false} />)
+			expect(sibling).not.toHaveAttribute('inert')
+			document.body.removeChild(sibling)
+		})
+	})
+
+	describe('layout options', () => {
+		it('defaults to the md width', () => {
+			const { getByRole } = render(<Modal {...baseProps} variant='simple' />)
+			expect(getByRole('dialog').className).toContain('sm:max-w-lg')
+		})
+
+		it('applies the requested size', () => {
+			const { getByRole } = render(
+				<Modal {...baseProps} variant='simple' size='lg' />
+			)
+			expect(getByRole('dialog').className).toContain('sm:max-w-2xl')
+		})
+
+		it('defaults the root z-index to 50 and honours the zIndex prop', () => {
+			const { getByTestId, rerender } = render(
+				<Modal {...baseProps} variant='simple' />
+			)
+			const root = (): HTMLElement =>
+				getByTestId('rtfm-backdrop').parentElement as HTMLElement
+			expect(root().style.zIndex).toBe('50')
+			rerender(<Modal {...baseProps} variant='simple' zIndex={70} />)
+			expect(root().style.zIndex).toBe('70')
+		})
+
+		it('adds the sheet classes on mobile when mobileSheet is set', () => {
+			const { getByRole } = render(
+				<Modal {...baseProps} variant='simple' mobileSheet />
+			)
+			const className = getByRole('dialog').className
+			expect(className).toContain('max-sm:animate-slide-up-sheet')
+			expect(className).toContain('max-sm:rounded-t-2xl')
+		})
+
+		it('appends the classNames slots after the defaults', () => {
+			const { getByRole, getByText } = render(
+				<Modal
+					{...baseProps}
+					variant='simple'
+					classNames={{ panel: 'custom-panel', closeButton: 'custom-close' }}
+				/>
+			)
+			expect(getByRole('dialog').className).toContain('custom-panel')
+			expect(getByText('Close').className).toContain('custom-close')
+		})
+	})
+
+	describe('composable API', () => {
+		const composable = (
+			<Modal isOpen onClose={() => {}}>
+				<Modal.Header>Composed title</Modal.Header>
+				<Modal.Body>Composed body</Modal.Body>
+				<Modal.Footer>
+					<button>Do it</button>
+				</Modal.Footer>
+			</Modal>
+		)
+
+		it('renders free children without a variant', () => {
+			const { getByText } = render(composable)
+			expect(getByText('Composed title')).toBeInTheDocument()
+			expect(getByText('Composed body')).toBeInTheDocument()
+			expect(getByText('Do it')).toBeInTheDocument()
+		})
+
+		it('wires Header and Body into the dialog aria attributes', () => {
+			const { getByRole, getByText } = render(composable)
+			const dialog = getByRole('dialog')
+			expect(getByText('Composed title').id).toBe(
+				dialog.getAttribute('aria-labelledby')
+			)
+			expect(getByText('Composed body').id).toBe(
+				dialog.getAttribute('aria-describedby')
+			)
+		})
+
+		it('renders nothing while isOpen is false', () => {
+			const { queryByRole } = render(
+				<Modal isOpen={false} onClose={() => {}}>
+					<Modal.Body>Hidden</Modal.Body>
+				</Modal>
+			)
+			expect(queryByRole('dialog')).not.toBeInTheDocument()
+		})
+
+		it('dismisses through the X button', () => {
+			const onClose = vi.fn()
+			const { getByLabelText } = render(
+				<Modal isOpen onClose={onClose}>
+					<Modal.Body>Content</Modal.Body>
+				</Modal>
+			)
+			fireEvent.click(getByLabelText('Close dialog'))
+			expect(onClose).toHaveBeenCalledTimes(1)
+		})
+	})
+
+	describe('useModal', () => {
+		it('opens, closes and toggles', () => {
+			const { result } = renderHook(() => useModal())
+			expect(result.current.isOpen).toBe(false)
+			act(() => result.current.open())
+			expect(result.current.isOpen).toBe(true)
+			act(() => result.current.close())
+			expect(result.current.isOpen).toBe(false)
+			act(() => result.current.toggle())
+			expect(result.current.isOpen).toBe(true)
+		})
+
+		it('honours the initialOpen argument', () => {
+			const { result } = renderHook(() => useModal(true))
+			expect(result.current.isOpen).toBe(true)
 		})
 	})
 })

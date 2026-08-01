@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Modal } from 'react-tailwind-flex-modal'
+import { Modal, useModal } from 'react-tailwind-flex-modal'
 import Form from './components/Form'
 
 const buttonClass =
@@ -7,6 +7,8 @@ const buttonClass =
 
 function App() {
   const [variant, setVariant] = useState(null)
+  const composable = useModal()
+  const sheet = useModal()
 
   const close = () => setVariant(null)
 
@@ -44,7 +46,37 @@ function App() {
           closeOnBackdropClick={false}
         />
 
-        <div className='horizontal xl:container flex items-center justify-center h-screen'>
+        <Modal isOpen={composable.isOpen} onClose={composable.close} size='lg'>
+          <Modal.Header>Composable modal</Modal.Header>
+          <Modal.Body>
+            Free content built from Modal.Header, Modal.Body and Modal.Footer,
+            driven by the useModal hook. Close it with the X, Escape, the
+            backdrop or the buttons below.
+          </Modal.Body>
+          <Modal.Footer>
+            <button className={buttonClass} onClick={composable.close}>
+              Cancel
+            </button>
+            <button className={buttonClass} onClick={composable.close}>
+              Confirm
+            </button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          isOpen={sheet.isOpen}
+          onClose={sheet.close}
+          mobileSheet
+          size='sm'
+        >
+          <Modal.Header>Mobile sheet</Modal.Header>
+          <Modal.Body>
+            Shrink the viewport below the sm breakpoint: this modal docks to
+            the bottom edge and slides up like a sheet.
+          </Modal.Body>
+        </Modal>
+
+        <div className='horizontal xl:container flex flex-wrap items-center justify-center min-h-screen'>
           <div className='my-10 p-2 lg:p-10'>
             <button className={buttonClass} onClick={() => setVariant('simple')}>
               Simple Modal
@@ -61,6 +93,16 @@ function App() {
           <div className='my-10 p-2 lg:p-10'>
             <button className={buttonClass} onClick={() => setVariant('form')}>
               Form Modal
+            </button>
+          </div>
+          <div className='my-10 p-2 lg:p-10'>
+            <button className={buttonClass} onClick={composable.open}>
+              Composable Modal
+            </button>
+          </div>
+          <div className='my-10 p-2 lg:p-10'>
+            <button className={buttonClass} onClick={sheet.open}>
+              Mobile Sheet
             </button>
           </div>
         </div>

@@ -8,7 +8,11 @@
 @theme {
 	--animate-fade-in-down: fade-in-down 0.5s ease-out;
 	--animate-fade-in-up: fade-in-up 0.5s ease-out;
-	--animate-fade-in: fade-in 0.5s cubic-bezier(0.3, 0.89, 0.44, 1);
+	--animate-fade-in: fade-in 0.3s cubic-bezier(0.3, 0.89, 0.44, 1);
+	--animate-fade-out: fade-out 0.2s ease-in forwards;
+	--animate-pop-in: pop-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+	--animate-pop-out: pop-out 0.2s ease-in forwards;
+	--animate-slide-up-sheet: slide-up-sheet 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
 	@keyframes fade-in-down {
 		0% {
@@ -38,6 +42,46 @@
 		}
 		100% {
 			opacity: 1;
+		}
+	}
+
+	@keyframes fade-out {
+		0% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+		}
+	}
+
+	@keyframes pop-in {
+		0% {
+			opacity: 0;
+			transform: translateY(10px) scale(0.95);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	@keyframes pop-out {
+		0% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+		100% {
+			opacity: 0;
+			transform: translateY(10px) scale(0.95);
+		}
+	}
+
+	@keyframes slide-up-sheet {
+		0% {
+			transform: translateY(100%);
+		}
+		100% {
+			transform: translateY(0);
 		}
 	}
 }

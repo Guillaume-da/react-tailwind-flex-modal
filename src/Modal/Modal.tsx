@@ -1,7 +1,11 @@
 import {
+	createContext,
+	useContext,
 	useEffect,
 	useId,
+	useMemo,
 	useRef,
+	useState,
 	type Dispatch,
 	type MouseEvent,
 	type MouseEventHandler,
@@ -27,7 +31,43 @@ const getFocusable = (root: HTMLElement | null): HTMLElement[] =>
 		: []
 
 const BUTTON_BASE =
-	'mt-10 h-10 px-5 rounded-lg border border-gray-300 transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2'
+	'h-10 px-5 rounded-lg border border-gray-300 transition duration-150 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2'
+
+// Covers the exit animation even if `animationend` never fires
+// (e.g. `animation: none` via a consumer override).
+const EXIT_FALLBACK_MS = 400
+
+// Shared across instances so stacked modals lock once and the last one
+// closing restores the original styles.
+let scrollLockCount = 0
+let savedOverflow = ''
+let savedPaddingRight = ''
+
+const lockBodyScroll = (): void => {
+	if (scrollLockCount++ > 0) return
+	savedOverflow = document.body.style.overflow
+	savedPaddingRight = document.body.style.paddingRight
+	const scrollbarWidth =
+		window.innerWidth - document.documentElement.clientWidth
+	document.body.style.overflow = 'hidden'
+	if (scrollbarWidth > 0) {
+		const computed =
+			parseFloat(window.getComputedStyle(document.body).paddingRight) || 0
+		document.body.style.paddingRight = `${computed + scrollbarWidth}px`
+	}
+}
+
+const unlockBodyScroll = (): void => {
+	scrollLockCount = Math.max(0, scrollLockCount - 1)
+	if (scrollLockCount > 0) return
+	document.body.style.overflow = savedOverflow
+	document.body.style.paddingRight = savedPaddingRight
+}
+
+const prefersReducedMotion = (): boolean =>
+	typeof window !== 'undefined' &&
+	typeof window.matchMedia === 'function' &&
+	window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 const DefaultWarningIcon = (): React.JSX.Element => (
 	<svg
@@ -40,15 +80,62 @@ const DefaultWarningIcon = (): React.JSX.Element => (
 	</svg>
 )
 
+const CloseIcon = (): React.JSX.Element => (
+	<svg
+		viewBox='0 0 24 24'
+		aria-hidden='true'
+		focusable='false'
+		className='h-5 w-5'
+		fill='none'
+		stroke='currentColor'
+		strokeWidth={2}
+		strokeLinecap='round'
+	>
+		<path d='M6 6l12 12M18 6L6 18' />
+	</svg>
+)
+
 export type ModalVariant = 'simple' | 'approval' | 'form'
 
 /** Variant names accepted by v1. Still honoured, but prefer {@link ModalVariant}. */
 export type LegacyModalVariant = 'simpleModal' | 'aprovalModal' | 'formModal'
 
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full'
+
+/** Extra classes appended after the default classes of each slot. */
+export interface ModalClassNames {
+	root?: string;
+	backdrop?: string;
+	panel?: string;
+	title?: string;
+	message?: string;
+	closeButton?: string;
+	approveButton?: string;
+	/** The "X" button in the top-right corner. */
+	dismissButton?: string;
+}
+
+const SIZE_CLASSES: Record<ModalSize, string> = {
+	sm: 'sm:w-full sm:max-w-sm',
+	md: 'sm:w-full sm:max-w-lg',
+	lg: 'sm:w-full sm:max-w-2xl',
+	xl: 'sm:w-full sm:max-w-4xl',
+	full: 'sm:w-full sm:max-w-none min-h-full sm:rounded-none'
+}
+
 export interface ModalProps {
 	/** Which layout to render. Legacy v1 names are still accepted. */
 	variant?: ModalVariant | LegacyModalVariant;
-	/** When `false`, nothing renders. Omit to control mounting yourself. */
+	/**
+	 * Free content, rendered when no `variant` is given. Compose with
+	 * `Modal.Header`, `Modal.Body` and `Modal.Footer` for the default styling.
+	 */
+	children?: ReactNode;
+	/**
+	 * When `false`, nothing renders. Toggling from `true` to `false` plays the
+	 * exit animation before unmounting; unmounting the component yourself
+	 * (`{show && <Modal/>}`) skips it.
+	 */
 	isOpen?: boolean;
 	/** Called for every dismissal: close button, cancel button, Escape, backdrop. */
 	onClose?: () => void;
@@ -64,6 +151,22 @@ export interface ModalProps {
 	warningIcon?: ReactNode;
 	formComponent?: ReactNode;
 
+	/** Panel width. Defaults to `'md'`, the pre-2.1 width. */
+	size?: ModalSize;
+	/** `z-index` of the modal root. Defaults to `50`. */
+	zIndex?: number;
+	/** Render the "X" dismiss button in the top-right corner. Defaults to `true`. */
+	showCloseButton?: boolean;
+	/** Accessible name of the "X" dismiss button. Defaults to `'Close dialog'`. */
+	closeButtonAriaLabel?: string;
+	/**
+	 * On viewports below `sm`, dock the panel to the bottom edge as a
+	 * full-width sheet with a slide-up animation. Defaults to `false`.
+	 */
+	mobileSheet?: boolean;
+	/** Extra classes appended to each slot's defaults. */
+	classNames?: ModalClassNames;
+
 	/** Accessible name, used when the variant renders no title (e.g. `form`). */
 	ariaLabel?: string;
 	/** Dismiss when the backdrop is clicked. Defaults to `true`. */
@@ -75,16 +178,24 @@ export interface ModalProps {
 	/** Portal target. Defaults to `document.body`. */
 	portalContainer?: HTMLElement;
 
+	/** Entrance animation class of the panel. Defaults to `animate-pop-in`. */
 	animation?: string;
+	/** Exit animation class of the panel. Defaults to `animate-pop-out`. */
+	exitAnimation?: string;
 	modalBackground?: string;
 	darkModalBackground?: string;
 	successTitleColor?: string;
 	darkSuccessTitleColor?: string;
 	warningTitleColor?: string;
+	/** @deprecated Use {@link ModalProps.classNames}`.message`. */
 	messageTextColor?: string;
+	/** @deprecated Use {@link ModalProps.classNames}. */
 	buttonsTextColor?: string;
+	/** @deprecated Use {@link ModalProps.classNames}`.closeButton`. */
 	closeButtonBgColor?: string;
+	/** @deprecated Use {@link ModalProps.classNames}`.approveButton`. */
 	approveButtonBgColor?: string;
+	/** @deprecated Use {@link ModalProps.classNames}`.approveButton`. */
 	darkApproveButtonBgColor?: string;
 
 	/** @deprecated Use {@link ModalProps.variant}. */
@@ -113,6 +224,50 @@ export interface ModalProps {
 	darkAprovalButtonBgColor?: string;
 }
 
+interface ModalContextValue {
+	titleId?: string;
+	descriptionId?: string;
+}
+
+const ModalContext = createContext<ModalContextValue>({})
+
+interface ModalSectionProps {
+	children?: ReactNode;
+	className?: string;
+}
+
+const ModalHeader = ({ children, className }: ModalSectionProps): React.JSX.Element => {
+	const { titleId } = useContext(ModalContext)
+	return (
+		<div
+			id={titleId}
+			className={`pr-8 text-xl font-semibold text-gray-900 dark:text-gray-100 ${className ?? ''}`}
+		>
+			{children}
+		</div>
+	)
+}
+
+const ModalBody = ({ children, className }: ModalSectionProps): React.JSX.Element => {
+	const { descriptionId } = useContext(ModalContext)
+	return (
+		<div
+			id={descriptionId}
+			className={`mt-2 text-gray-600 dark:text-gray-300 ${className ?? ''}`}
+		>
+			{children}
+		</div>
+	)
+}
+
+const ModalFooter = ({ children, className }: ModalSectionProps): React.JSX.Element => (
+	<div
+		className={`mt-6 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 ${className ?? ''}`}
+	>
+		{children}
+	</div>
+)
+
 const resolveVariant = (
 	variant: ModalProps['variant'],
 	legacy: string | undefined
@@ -132,19 +287,26 @@ const resolveVariant = (
 	}
 }
 
-const Modal = (props: ModalProps): React.JSX.Element | null => {
+const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 	const refApproveButton = useRef<HTMLButtonElement>(null)
 	const refCloseButton = useRef<HTMLButtonElement>(null)
+	const refDismissButton = useRef<HTMLButtonElement>(null)
 	const refDialog = useRef<HTMLDivElement>(null)
+	const refRoot = useRef<HTMLDivElement>(null)
 
 	const instanceId = useId()
 	const titleId = `${instanceId}-title`
 	const descriptionId = `${instanceId}-description`
 
 	const variant = resolveVariant(props.variant, props.currentModal)
-	const isOpen = props.isOpen !== false && variant !== null
+	const hasChildren =
+		props.children !== undefined &&
+		props.children !== null &&
+		props.children !== false
+	const wantsOpen =
+		props.isOpen !== false && (variant !== null || hasChildren)
 
-	const { onClose, setShowModal, closeOnEscape } = props
+	const { onClose, setShowModal, closeOnEscape, usePortal } = props
 
 	// A dismissal with no originating button: Escape and backdrop clicks.
 	// v1 only ever called `setShowModal(false)` here, so keep that path intact
@@ -155,9 +317,43 @@ const Modal = (props: ModalProps): React.JSX.Element | null => {
 		else if (setShowModal) setShowModal(false)
 	}
 
+	// `isOpen` going false enters a short "closing" phase so the exit
+	// animation can play; the modal stays mounted until it ends.
+	const [closing, setClosing] = useState(false)
+	const wasOpen = useRef(false)
+
+	useEffect(() => {
+		if (wantsOpen) {
+			wasOpen.current = true
+			setClosing(false)
+			return
+		}
+		if (!wasOpen.current) return
+		wasOpen.current = false
+		if (prefersReducedMotion()) return
+		setClosing(true)
+		const timer = window.setTimeout(() => setClosing(false), EXIT_FALLBACK_MS)
+		return () => window.clearTimeout(timer)
+	}, [wantsOpen])
+
+	const rendered = wantsOpen || closing
+
+	// Native listener rather than React's onAnimationEnd: animation events on
+	// a portaled subtree do not reliably reach React's delegated root.
+	useEffect(() => {
+		if (!closing) return
+		const dialog = refDialog.current
+		if (!dialog) return
+		const onEnd = (event: AnimationEvent): void => {
+			if (event.target === dialog) setClosing(false)
+		}
+		dialog.addEventListener('animationend', onEnd)
+		return () => dialog.removeEventListener('animationend', onEnd)
+	}, [closing])
+
 	// Dismiss on Escape, and keep Tab cycling inside the dialog.
 	useEffect(() => {
-		if (!isOpen) return
+		if (!wantsOpen) return
 
 		const onKeyDown = (event: KeyboardEvent): void => {
 			if (event.key === 'Escape') {
@@ -190,27 +386,43 @@ const Modal = (props: ModalProps): React.JSX.Element | null => {
 
 		document.addEventListener('keydown', onKeyDown)
 		return () => document.removeEventListener('keydown', onKeyDown)
-	}, [isOpen, closeOnEscape])
+	}, [wantsOpen, closeOnEscape])
 
-	// Stop the page behind the modal from scrolling.
+	// Stop the page behind the modal from scrolling, compensating for the
+	// vanished scrollbar so the layout does not shift.
 	useEffect(() => {
-		if (!isOpen) return
+		if (!rendered) return
+		lockBodyScroll()
+		return unlockBodyScroll
+	}, [rendered])
 
-		const previousOverflow = document.body.style.overflow
-		document.body.style.overflow = 'hidden'
-		return () => {
-			document.body.style.overflow = previousOverflow
+	// Make the rest of the page inert for assistive tech while open.
+	// Runs before the focus effect so its cleanup lifts `inert` before
+	// focus is handed back to the opener.
+	useEffect(() => {
+		if (!rendered || usePortal === false) return
+		const root = refRoot.current
+		const container = root?.parentElement
+		if (!root || !container) return
+
+		const touched: Element[] = []
+		for (const sibling of Array.from(container.children)) {
+			if (sibling === root || sibling.hasAttribute('inert')) continue
+			sibling.setAttribute('inert', '')
+			touched.push(sibling)
 		}
-	}, [isOpen])
+		return () => touched.forEach((element) => element.removeAttribute('inert'))
+	}, [rendered, usePortal])
 
 	// Move focus in on open, hand it back to the opener on close.
 	useEffect(() => {
-		if (!isOpen) return
+		if (!wantsOpen) return
 
 		const previouslyFocused = document.activeElement as HTMLElement | null
-		// Prefer the dismissive button so Enter never fires a destructive action.
+		// Prefer the dismissive buttons so Enter never fires a destructive action.
 		const initial =
 			refCloseButton.current ||
+			refDismissButton.current ||
 			refApproveButton.current ||
 			getFocusable(refDialog.current)[0] ||
 			refDialog.current
@@ -221,9 +433,14 @@ const Modal = (props: ModalProps): React.JSX.Element | null => {
 				previouslyFocused.focus()
 			}
 		}
-	}, [isOpen])
+	}, [wantsOpen])
 
-	if (!isOpen) return null
+	const contextValue = useMemo(
+		() => ({ titleId, descriptionId }),
+		[titleId, descriptionId]
+	)
+
+	if (!rendered) return null
 
 	const title =
 		props.title ??
@@ -255,11 +472,15 @@ const Modal = (props: ModalProps): React.JSX.Element | null => {
 		dismissRef.current?.()
 	}
 
+	const slots = props.classNames
+
 	const closeButtonClass = `${BUTTON_BASE} ${
 		props.buttonsTextColor ?? 'text-white'
 	} ${
 		props.closeButtonBgColor ?? 'bg-red-600'
-	} dark:border-red-600 hover:bg-red-700 hover:text-green-100 focus:ring-red-500`
+	} dark:border-red-600 hover:bg-red-700 hover:text-green-100 focus:ring-red-500 ${
+		slots?.closeButton ?? ''
+	}`
 
 	const approveButtonClass = `${BUTTON_BASE} ${
 		props.buttonsTextColor ?? 'text-white'
@@ -269,11 +490,13 @@ const Modal = (props: ModalProps): React.JSX.Element | null => {
 		props.darkApproveButtonBgColor ??
 		props.darkAprovalButtonBgColor ??
 		'dark:bg-lime-600'
-	} dark:border-lime-600 hover:bg-lime-700 hover:text-green-100 focus:ring-lime-500`
+	} dark:border-lime-600 hover:bg-lime-700 hover:text-green-100 focus:ring-lime-500 ${
+		slots?.approveButton ?? ''
+	}`
 
 	const messageClass = `text-lg font-semibold ${
 		props.messageTextColor ?? 'text-gray-500'
-	}`
+	} ${slots?.message ?? ''}`
 
 	const renderBody = (): ReactNode => {
 		switch (variant) {
@@ -284,14 +507,16 @@ const Modal = (props: ModalProps): React.JSX.Element | null => {
 						id={titleId}
 						className={`flex text-xl font-semibold uppercase ${
 							props.successTitleColor ?? 'text-lime-600'
-						} ${props.darkSuccessTitleColor ?? 'dark:text-lime-600'}`}
+						} ${props.darkSuccessTitleColor ?? 'dark:text-lime-600'} ${
+							slots?.title ?? ''
+						}`}
 					>
 						{title}
 					</div>
 					<div id={descriptionId} className={messageClass}>
 						{message}
 					</div>
-					<div className='flex gap-x-4 -mt-4'>
+					<div className='mt-6 flex gap-x-4'>
 						<button
 							ref={refCloseButton}
 							onClick={onCloseClick}
@@ -309,14 +534,14 @@ const Modal = (props: ModalProps): React.JSX.Element | null => {
 						id={titleId}
 						className={`flex items-center text-xl font-semibold mb-4 ${
 							props.warningTitleColor ?? 'text-red-500'
-						}`}
+						} ${slots?.title ?? ''}`}
 					>
 						{props.warningIcon ?? <DefaultWarningIcon />} {title}
 					</div>
 					<div id={descriptionId} className={messageClass}>
 						{message}
 					</div>
-					<div className='flex gap-x-4 -mt-4'>
+					<div className='mt-6 flex gap-x-4'>
 						<button
 							ref={refApproveButton}
 							onClick={onApprove}
@@ -337,36 +562,76 @@ const Modal = (props: ModalProps): React.JSX.Element | null => {
 		case 'form':
 			return <div>{props.formComponent}</div>
 		default:
-			return null
+			return props.children ?? null
 		}
 	}
 
+	const labelledById = title || (variant === null && hasChildren) ? titleId : undefined
+
+	const enterAnimation = `${props.animation ?? 'animate-pop-in'}${
+		props.mobileSheet ? ' max-sm:animate-slide-up-sheet' : ''
+	}`
+	const panelAnimation = closing
+		? props.exitAnimation ?? 'animate-pop-out'
+		: enterAnimation
+
 	const modal = (
-		<div className='fixed inset-0 z-10 overflow-y-auto'>
+		<div
+			ref={refRoot}
+			className={`fixed inset-0 overflow-y-auto ${slots?.root ?? ''}`}
+			style={{ zIndex: props.zIndex ?? 50 }}
+		>
+			<div
+				aria-hidden='true'
+				className={`fixed inset-0 bg-black/40 backdrop-blur-sm dark:bg-black/60 motion-reduce:animate-none ${
+					closing ? 'animate-fade-out' : 'animate-fade-in'
+				} ${slots?.backdrop ?? ''}`}
+			/>
 			<div
 				onClick={onBackdropClick}
 				data-testid='rtfm-backdrop'
-				className='flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0 bg-white/60 dark:bg-zinc-600'
+				className='flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0'
 			>
 				<div
 					ref={refDialog}
 					role='dialog'
 					aria-modal='true'
-					aria-labelledby={title ? titleId : undefined}
-					aria-describedby={message ? descriptionId : undefined}
-					aria-label={title ? undefined : props.ariaLabel}
+					aria-labelledby={props.ariaLabel ? undefined : labelledById}
+					aria-describedby={
+						message || (variant === null && hasChildren) ? descriptionId : undefined
+					}
+					aria-label={labelledById && !props.ariaLabel ? undefined : props.ariaLabel}
 					tabIndex={-1}
-					className={`relative transform overflow-hidden rounded-lg dark:bg-zinc-600 text-left shadow-xl transition-all sm:w-full sm:max-w-lg ${
-						props.animation ?? 'animate-fade-in-up'
-					}`}
+					className={`relative transform overflow-hidden rounded-2xl text-left shadow-2xl ring-1 ring-black/5 dark:ring-white/10 motion-reduce:animate-none ${
+						SIZE_CLASSES[props.size ?? 'md']
+					}${
+						props.mobileSheet
+							? ' max-sm:w-full max-sm:rounded-t-2xl max-sm:rounded-b-none'
+							: ''
+					} ${panelAnimation} ${slots?.panel ?? ''}`}
 				>
 					<div
 						className={`${props.modalBackground ?? 'bg-white'} ${
 							props.darkModalBackground ?? 'dark:bg-zinc-800'
 						} mx-auto px-4 pt-5 pb-4 sm:p-6 sm:pb-4`}
 					>
-						{renderBody()}
+						<ModalContext.Provider value={contextValue}>
+							{renderBody()}
+						</ModalContext.Provider>
 					</div>
+					{props.showCloseButton !== false && (
+						<button
+							ref={refDismissButton}
+							type='button'
+							aria-label={props.closeButtonAriaLabel ?? 'Close dialog'}
+							onClick={onCloseClick}
+							className={`absolute right-3 top-3 rounded-lg p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-black/5 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 active:scale-95 dark:hover:bg-white/10 dark:hover:text-gray-200 ${
+								slots?.dismissButton ?? ''
+							}`}
+						>
+							<CloseIcon />
+						</button>
+					)}
 				</div>
 			</div>
 		</div>
@@ -379,5 +644,11 @@ const Modal = (props: ModalProps): React.JSX.Element | null => {
 	}
 	return createPortal(modal, props.portalContainer ?? document.body)
 }
+
+const Modal = Object.assign(ModalRoot, {
+	Header: ModalHeader,
+	Body: ModalBody,
+	Footer: ModalFooter
+})
 
 export default Modal

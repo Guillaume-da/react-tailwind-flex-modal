@@ -1,7 +1,7 @@
 {
   "name": "react-tailwind-flex-modal",
-  "version": "2.0.0",
-  "description": "A light, accessible Modal made with Tailwind",
+  "version": "2.1.0",
+  "description": "Accessible, animated React modal built with Tailwind CSS 4 — ready-made and composable layouts, focus trap, inert background, enter/exit animations, mobile bottom sheet, dark mode, zero dependencies",
   "author": "Guillaume-da",
   "license": "MIT",
   "repository": {
@@ -16,6 +16,10 @@
     "approval-modal",
     "dialog",
     "accessible",
+    "a11y",
+    "focus-trap",
+    "bottom-sheet",
+    "animation",
     "react tailwind modal",
     "react tailwind multipurpose modal"
   ],
