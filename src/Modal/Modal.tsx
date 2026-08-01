@@ -13,6 +13,32 @@ import {
 	type SetStateAction
 } from 'react'
 import { createPortal } from 'react-dom'
+import {
+	isNeutralTheme,
+	resolveThemeClass,
+	themeInfo,
+	type ModalTheme
+} from './themes'
+
+// Stable hooks the preset stylesheet targets. They are part of the public API:
+// consumers can style them from plain CSS without touching `classNames`.
+const SLOT = {
+	root: 'rtm-root',
+	backdrop: 'rtm-backdrop',
+	panel: 'rtm-panel',
+	content: 'rtm-content',
+	titleBar: 'rtm-titlebar',
+	title: 'rtm-title',
+	message: 'rtm-message',
+	icon: 'rtm-icon',
+	close: 'rtm-close',
+	approve: 'rtm-approve',
+	dismiss: 'rtm-dismiss'
+} as const
+
+/** Drops empty entries so slots never emit runs of stray spaces. */
+const cx = (...parts: (string | false | null | undefined)[]): string =>
+	parts.filter(Boolean).join(' ')
 
 const FOCUSABLE_SELECTOR = [
 	'a[href]',
@@ -30,17 +56,40 @@ const getFocusable = (root: HTMLElement | null): HTMLElement[] =>
 		)
 		: []
 
+// Structure is emitted for every theme; skins only for `neutral`. A theme's
+// colours live in the `components` layer, which loses to any utility — so the
+// component has to stop emitting competing colour utilities for the theme to win.
 const BUTTON_BASE =
-	'inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-medium transition duration-150 ease-in-out active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:ring-offset-zinc-900'
+	'inline-flex h-10 items-center justify-center px-4 text-sm font-medium transition duration-150 ease-in-out active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
 
 // Neutral secondary button: the dismissive action should not shout.
 const CLOSE_BUTTON_SKIN =
-	'border border-gray-300 bg-white hover:bg-gray-50 focus-visible:ring-gray-400 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
+	'rounded-lg border border-gray-300 bg-white hover:bg-gray-50 focus-visible:ring-gray-400 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10 dark:ring-offset-zinc-900'
 
 // The approval variant confirms a warning, so the confirm action carries the
 // destructive colour and the cancel action stays neutral — not the reverse.
 const APPROVE_BUTTON_SKIN =
-	'bg-red-600 shadow-sm hover:bg-red-700 focus-visible:ring-red-500 dark:bg-red-500 dark:hover:bg-red-400'
+	'rounded-lg bg-red-600 shadow-sm hover:bg-red-700 focus-visible:ring-red-500 dark:bg-red-500 dark:hover:bg-red-400 dark:ring-offset-zinc-900'
+
+const PANEL_STRUCTURE =
+	'relative transform overflow-hidden text-left motion-reduce:animate-none'
+const PANEL_SKIN =
+	'rounded-2xl shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)] ring-1 ring-black/5 dark:shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] dark:ring-white/10'
+
+const BACKDROP_STRUCTURE = 'fixed inset-0 motion-reduce:animate-none'
+const BACKDROP_SKIN = 'bg-black/40 backdrop-blur-sm dark:bg-black/60'
+
+const CONTENT_SKIN = 'p-5 sm:p-6'
+
+const TITLE_SKIN = 'text-lg font-semibold tracking-tight'
+const MESSAGE_SKIN = 'text-sm leading-6'
+const ICON_SKIN =
+	'rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400'
+
+const DISMISS_STRUCTURE =
+	'absolute right-3 top-3 p-2 transition duration-150 ease-in-out focus:outline-none active:scale-95'
+const DISMISS_SKIN =
+	'rounded-full text-gray-400 hover:bg-black/5 hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200'
 
 // Covers the exit animation even if `animationend` never fires
 // (e.g. `animation: none` via a consumer override).
@@ -116,8 +165,14 @@ export interface ModalClassNames {
 	root?: string;
 	backdrop?: string;
 	panel?: string;
+	/** The padded wrapper holding the body, inside the panel. */
+	content?: string;
+	/** The optional window chrome, when {@link ModalProps.titleBar} renders it. */
+	titleBar?: string;
 	title?: string;
 	message?: string;
+	/** The round badge holding the `approval` variant's warning icon. */
+	icon?: string;
 	closeButton?: string;
 	approveButton?: string;
 	/** The "X" button in the top-right corner. */
@@ -135,6 +190,20 @@ const SIZE_CLASSES: Record<ModalSize, string> = {
 export interface ModalProps {
 	/** Which layout to render. Legacy v1 names are still accepted. */
 	variant?: ModalVariant | LegacyModalVariant;
+	/**
+	 * A shipped preset look. Defaults to `'neutral'`, which is the component's own
+	 * styling. Any other theme replaces the colours, type and elevation; anything
+	 * you pass through {@link ModalProps.classNames} still wins over it.
+	 */
+	theme?: ModalTheme;
+	/**
+	 * Window chrome — three macOS-style lights, the red one being the close
+	 * button. `true` forces it on, `false` off, a node replaces the built-in bar.
+	 * Defaults to whatever the theme asks for (only `terminal` asks).
+	 */
+	titleBar?: boolean | ReactNode;
+	/** Text centred in the title bar. Defaults to {@link ModalProps.title}. */
+	titleBarLabel?: ReactNode;
 	/**
 	 * Free content, rendered when no `variant` is given. Compose with
 	 * `Modal.Header`, `Modal.Body` and `Modal.Footer` for the default styling.
@@ -236,9 +305,12 @@ export interface ModalProps {
 interface ModalContextValue {
 	titleId?: string;
 	descriptionId?: string;
+	/** Compound children need it too, to drop their own colours under a theme. */
+	neutral?: boolean;
+	slots?: ModalClassNames;
 }
 
-const ModalContext = createContext<ModalContextValue>({})
+const ModalContext = createContext<ModalContextValue>({ neutral: true })
 
 interface ModalSectionProps {
 	children?: ReactNode;
@@ -246,11 +318,16 @@ interface ModalSectionProps {
 }
 
 const ModalHeader = ({ children, className }: ModalSectionProps): React.JSX.Element => {
-	const { titleId } = useContext(ModalContext)
+	const { titleId, neutral } = useContext(ModalContext)
 	return (
 		<div
 			id={titleId}
-			className={`pr-8 text-lg font-semibold tracking-tight text-gray-900 dark:text-white ${className ?? ''}`}
+			className={cx(
+				SLOT.title,
+				'pr-8',
+				neutral && `${TITLE_SKIN} text-gray-900 dark:text-white`,
+				className
+			)}
 		>
 			{children}
 		</div>
@@ -258,11 +335,16 @@ const ModalHeader = ({ children, className }: ModalSectionProps): React.JSX.Elem
 }
 
 const ModalBody = ({ children, className }: ModalSectionProps): React.JSX.Element => {
-	const { descriptionId } = useContext(ModalContext)
+	const { descriptionId, neutral } = useContext(ModalContext)
 	return (
 		<div
 			id={descriptionId}
-			className={`mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400 ${className ?? ''}`}
+			className={cx(
+				SLOT.message,
+				'mt-2',
+				neutral && `${MESSAGE_SKIN} text-gray-500 dark:text-gray-400`,
+				className
+			)}
 		>
 			{children}
 		</div>
@@ -271,9 +353,60 @@ const ModalBody = ({ children, className }: ModalSectionProps): React.JSX.Elemen
 
 const ModalFooter = ({ children, className }: ModalSectionProps): React.JSX.Element => (
 	<div
-		className={`mt-6 flex flex-wrap items-center justify-end gap-3 ${className ?? ''}`}
+		className={cx('mt-6 flex flex-wrap items-center justify-end gap-3', className)}
 	>
 		{children}
+	</div>
+)
+
+interface TitleBarProps {
+	label?: ReactNode;
+	neutral: boolean;
+	className?: string;
+	onDismiss: MouseEventHandler<HTMLButtonElement>;
+	dismissLabel: string;
+	dismissRef: React.RefObject<HTMLButtonElement | null>;
+}
+
+/**
+ * Window chrome, rendered as a *sibling* of the padded content wrapper so the
+ * dots sit flush against the panel edge. It cannot be a compound child: the
+ * three variants render no children at all, so a themed `variant='simple'`
+ * would never get a title bar.
+ *
+ * The red light is the real close button — that is the macOS affordance, and it
+ * keeps exactly one dismiss control in the tab order.
+ */
+const TitleBar = ({
+	label,
+	neutral,
+	className,
+	onDismiss,
+	dismissLabel,
+	dismissRef
+}: TitleBarProps): React.JSX.Element => (
+	<div
+		className={cx(
+			SLOT.titleBar,
+			'relative flex items-center gap-2 px-4 py-3',
+			neutral && 'border-b border-gray-200 dark:border-white/10',
+			className
+		)}
+	>
+		<button
+			ref={dismissRef}
+			type='button'
+			aria-label={dismissLabel}
+			onClick={onDismiss}
+			className='h-3 w-3 shrink-0 rounded-full bg-[#ff5f57] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60'
+		/>
+		<span aria-hidden='true' className='h-3 w-3 shrink-0 rounded-full bg-[#febc2e]' />
+		<span aria-hidden='true' className='h-3 w-3 shrink-0 rounded-full bg-[#28c840]' />
+		{/* Absolutely placed so it centres against the panel, not against the
+		    remaining space to the right of the dots. */}
+		<span className='pointer-events-none absolute inset-x-0 truncate px-16 text-center text-xs'>
+			{label}
+		</span>
 	</div>
 )
 
@@ -444,9 +577,13 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 		}
 	}, [wantsOpen])
 
+	const neutral = isNeutralTheme(props.theme)
+	const themeClass = resolveThemeClass(props.theme)
+	const theme = themeInfo(props.theme)
+
 	const contextValue = useMemo(
-		() => ({ titleId, descriptionId }),
-		[titleId, descriptionId]
+		() => ({ titleId, descriptionId, neutral, slots: props.classNames }),
+		[titleId, descriptionId, neutral, props.classNames]
 	)
 
 	if (!rendered) return null
@@ -483,33 +620,59 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 
 	const slots = props.classNames
 
+	// `titleBar` overrides the theme in both directions; a node replaces the bar.
+	const customChrome =
+		props.titleBar !== undefined && typeof props.titleBar !== 'boolean'
+			? props.titleBar
+			: null
+	const showChrome =
+		props.titleBar === false
+			? false
+			: props.titleBar !== undefined || Boolean(theme.chrome)
+
+	const caret = theme.caret ? (
+		<span aria-hidden='true' data-rtm-caret='' className='rtm-caret' />
+	) : null
+
 	// A custom background means the button is filled, so it keeps the v2 white
-	// label; otherwise it falls back to the neutral secondary skin.
-	const closeButtonClass = `${BUTTON_BASE} ${
+	// label; otherwise it falls back to the neutral secondary skin — but only
+	// when no theme is asking for the colours itself.
+	const closeButtonClass = cx(
+		SLOT.close,
+		BUTTON_BASE,
 		props.closeButtonBgColor
-			? `border border-gray-300 dark:border-white/15 focus-visible:ring-gray-400 ${props.closeButtonBgColor}`
-			: CLOSE_BUTTON_SKIN
-	} ${
+			? `rounded-lg border border-gray-300 dark:border-white/15 focus-visible:ring-gray-400 ${props.closeButtonBgColor}`
+			: neutral && CLOSE_BUTTON_SKIN,
 		props.buttonsTextColor ??
-		(props.closeButtonBgColor ? 'text-white' : 'text-gray-700 dark:text-gray-200')
-	} ${slots?.closeButton ?? ''}`
+			(props.closeButtonBgColor
+				? 'text-white'
+				: neutral && 'text-gray-700 dark:text-gray-200'),
+		slots?.closeButton
+	)
 
 	const approveBg = props.approveButtonBgColor ?? props.aprovalButtonBgColor
 	const darkApproveBg =
 		props.darkApproveButtonBgColor ?? props.darkAprovalButtonBgColor
-	const approveButtonClass = `${BUTTON_BASE} ${
-		props.buttonsTextColor ?? 'text-white'
-	} ${
+	const approveButtonClass = cx(
+		SLOT.approve,
+		BUTTON_BASE,
+		props.buttonsTextColor ?? ((neutral || approveBg) && 'text-white'),
 		approveBg
-			? `shadow-sm focus-visible:ring-gray-400 ${approveBg}`
-			: APPROVE_BUTTON_SKIN
-	} ${darkApproveBg ?? ''} ${slots?.approveButton ?? ''}`
+			? `rounded-lg shadow-sm focus-visible:ring-gray-400 ${approveBg}`
+			: neutral && APPROVE_BUTTON_SKIN,
+		darkApproveBg,
+		slots?.approveButton
+	)
 
-	const messageClass = `mt-2 text-sm leading-6 ${
-		props.messageTextColor ?? 'text-gray-500 dark:text-gray-400'
-	} ${slots?.message ?? ''}`
+	const messageClass = cx(
+		SLOT.message,
+		'mt-2',
+		neutral && MESSAGE_SKIN,
+		props.messageTextColor ?? (neutral && 'text-gray-500 dark:text-gray-400'),
+		slots?.message
+	)
 
-	const titleClass = 'text-lg font-semibold tracking-tight'
+	const titleClass = cx(SLOT.title, neutral && TITLE_SKIN)
 
 	const renderBody = (): ReactNode => {
 		switch (variant) {
@@ -518,16 +681,18 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 				<div className='flex flex-col items-center text-center'>
 					<h2
 						id={titleId}
-						className={`${titleClass} ${
-							props.successTitleColor ?? 'text-gray-900'
-						} ${props.darkSuccessTitleColor ?? 'dark:text-white'} ${
-							slots?.title ?? ''
-						}`}
+						className={cx(
+							titleClass,
+							props.successTitleColor ?? (neutral && 'text-gray-900'),
+							props.darkSuccessTitleColor ?? (neutral && 'dark:text-white'),
+							slots?.title
+						)}
 					>
 						{title}
 					</h2>
 					<div id={descriptionId} className={messageClass}>
 						{message}
+						{caret}
 					</div>
 					<div className='mt-6 flex w-full justify-center'>
 						<button
@@ -544,20 +709,29 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 			return (
 				<div className='flex flex-col items-center text-center'>
 					<span
-						className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400'
+						className={cx(
+							SLOT.icon,
+							'mb-4 flex h-12 w-12 items-center justify-center',
+							neutral && ICON_SKIN,
+							slots?.icon
+						)}
 					>
 						{props.warningIcon ?? <DefaultWarningIcon />}
 					</span>
 					<h2
 						id={titleId}
-						className={`${titleClass} ${
-							props.warningTitleColor ?? 'text-gray-900 dark:text-white'
-						} ${slots?.title ?? ''}`}
+						className={cx(
+							titleClass,
+							props.warningTitleColor ??
+								(neutral && 'text-gray-900 dark:text-white'),
+							slots?.title
+						)}
 					>
 						{title}
 					</h2>
 					<div id={descriptionId} className={messageClass}>
 						{message}
+						{caret}
 					</div>
 					{/* Cancel first so the visual order matches the tab order. */}
 					<div className='mt-6 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-center'>
@@ -597,14 +771,23 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 	const modal = (
 		<div
 			ref={refRoot}
-			className={`fixed inset-0 overflow-y-auto ${slots?.root ?? ''}`}
+			className={cx(
+				SLOT.root,
+				themeClass,
+				'fixed inset-0 overflow-y-auto',
+				slots?.root
+			)}
 			style={{ zIndex: props.zIndex ?? 50 }}
 		>
 			<div
 				aria-hidden='true'
-				className={`fixed inset-0 bg-black/40 backdrop-blur-sm dark:bg-black/60 motion-reduce:animate-none ${
-					closing ? 'animate-fade-out' : 'animate-fade-in'
-				} ${slots?.backdrop ?? ''}`}
+				className={cx(
+					SLOT.backdrop,
+					BACKDROP_STRUCTURE,
+					neutral && BACKDROP_SKIN,
+					closing ? 'animate-fade-out' : 'animate-fade-in',
+					slots?.backdrop
+				)}
 			/>
 			<div
 				onClick={onBackdropClick}
@@ -621,32 +804,55 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 					}
 					aria-label={labelledById && !props.ariaLabel ? undefined : props.ariaLabel}
 					tabIndex={-1}
-					className={`relative transform overflow-hidden rounded-2xl text-left shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)] ring-1 ring-black/5 dark:shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] dark:ring-white/10 motion-reduce:animate-none ${
-						SIZE_CLASSES[props.size ?? 'md']
-					}${
-						props.mobileSheet
-							? ' max-sm:w-full max-sm:rounded-t-2xl max-sm:rounded-b-none'
-							: ''
-					} ${panelAnimation} ${slots?.panel ?? ''}`}
+					data-rtm-theme={props.theme ?? 'neutral'}
+					className={cx(
+						SLOT.panel,
+						PANEL_STRUCTURE,
+						neutral && PANEL_SKIN,
+						SIZE_CLASSES[props.size ?? 'md'],
+						props.mobileSheet &&
+							'max-sm:w-full max-sm:rounded-t-2xl max-sm:rounded-b-none',
+						panelAnimation,
+						slots?.panel
+					)}
 				>
+					{showChrome &&
+						(customChrome ?? (
+							<TitleBar
+								label={props.titleBarLabel ?? title}
+								neutral={neutral}
+								className={slots?.titleBar}
+								onDismiss={onCloseClick}
+								dismissLabel={props.closeButtonAriaLabel ?? 'Close dialog'}
+								dismissRef={refDismissButton}
+							/>
+						))}
 					<div
-						className={`${props.modalBackground ?? 'bg-white'} ${
-							props.darkModalBackground ?? 'dark:bg-zinc-900'
-						} mx-auto p-5 sm:p-6`}
+						className={cx(
+							SLOT.content,
+							'mx-auto',
+							neutral && CONTENT_SKIN,
+							props.modalBackground ?? (neutral && 'bg-white'),
+							props.darkModalBackground ?? (neutral && 'dark:bg-zinc-900'),
+							slots?.content
+						)}
 					>
 						<ModalContext.Provider value={contextValue}>
 							{renderBody()}
 						</ModalContext.Provider>
 					</div>
-					{props.showCloseButton !== false && (
+					{props.showCloseButton !== false && !showChrome && (
 						<button
 							ref={refDismissButton}
 							type='button'
 							aria-label={props.closeButtonAriaLabel ?? 'Close dialog'}
 							onClick={onCloseClick}
-							className={`absolute right-3 top-3 rounded-full p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-black/5 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 active:scale-95 dark:hover:bg-white/10 dark:hover:text-gray-200 ${
-								slots?.dismissButton ?? ''
-							}`}
+							className={cx(
+								SLOT.dismiss,
+								DISMISS_STRUCTURE,
+								neutral && DISMISS_SKIN,
+								slots?.dismissButton
+							)}
 						>
 							<CloseIcon />
 						</button>

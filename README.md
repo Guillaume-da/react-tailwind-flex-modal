@@ -1,6 +1,6 @@
-# react-tailwind-flex-modal
+# tailwind-react-modal
 
-[![NPM](https://img.shields.io/npm/v/react-tailwind-flex-modal.svg)](https://www.npmjs.com/package/react-tailwind-flex-modal) [![CI](https://github.com/Guillaume-da/react-tailwind-flex-modal/actions/workflows/ci.yml/badge.svg)](https://github.com/Guillaume-da/react-tailwind-flex-modal/actions/workflows/ci.yml)
+[![NPM](https://img.shields.io/npm/v/tailwind-react-modal.svg)](https://www.npmjs.com/package/tailwind-react-modal) [![CI](https://github.com/Guillaume-da/tailwind-react-modal/actions/workflows/ci.yml/badge.svg)](https://github.com/Guillaume-da/tailwind-react-modal/actions/workflows/ci.yml)
 
 An accessible, animated React modal built with Tailwind CSS — **zero runtime
 dependencies** beyond React itself.
@@ -15,13 +15,24 @@ hard parts are already done for you:
 - **Animations** — the backdrop fades while the panel pops in and out on separate
   timings, including a real exit animation before unmount. `prefers-reduced-motion`
   is respected.
+- **Themes** — seven looks ship with the package: `neutral`, `terminal`,
+  `brutalist`, `glass`, `editorial`, `neon`, `minimal`. One prop, no Tailwind config,
+  and your own classes still override them.
 - **Polish** — blurred backdrop, scroll lock that compensates the scrollbar width so
   the page never shifts, a top-right "X" button, dark mode, and an optional
   bottom-sheet presentation on mobile.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a white rounded panel over a blurred backdrop, with a red warning badge, a title, a neutral cancel button and a red confirm button" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/terminal.png" alt="The terminal theme: a dark navy window with three traffic-light dots, a centered monospace title, a green shell prompt, white output, an amber quoted string and a blinking caret" width="820" />
 </p>
+
+<p align="center">
+  <em>Seven themes ship with the package. This one is <code>theme='terminal'</code>.</em>
+</p>
+
+> Most screenshots below use the shipped [`brutalist`](#themes) theme, because it
+> photographs well. The default is `neutral`: a plain white panel, an outlined cancel
+> button and a red confirm button.
 
 Requires **React 18 or 19** and **Tailwind CSS 4**.
 
@@ -33,11 +44,13 @@ Requires **React 18 or 19** and **Tailwind CSS 4**.
 - [Composable API](#composable-api)
 - [The useModal hook](#the-usemodal-hook)
 - [Mobile bottom sheet](#mobile-bottom-sheet)
+- [Themes](#themes)
 - [Behaviour & accessibility](#behaviour--accessibility)
 - [Sizes and stacking](#sizes-and-stacking)
 - [Animations](#animations)
 - [Styling](#styling)
 - [Dark mode](#dark-mode)
+- [Migrating from v2](#migrating-from-v2)
 - [Migrating from v1](#migrating-from-v1)
 - [Running the examples](#running-the-examples)
 - [Contributing](#contributing)
@@ -45,25 +58,27 @@ Requires **React 18 or 19** and **Tailwind CSS 4**.
 ## Installation
 
 ```bash
-npm install react-tailwind-flex-modal
+npm install tailwind-react-modal
 ```
 
 Import the component and the stylesheet once:
 
 ```jsx
-import { Modal } from 'react-tailwind-flex-modal'
-import 'react-tailwind-flex-modal/styles.css'
+import { Modal } from 'tailwind-react-modal'
+import 'tailwind-react-modal/styles.css'
 ```
 
-Import it **after** your own Tailwind entry point. Both stylesheets emit utilities at
-the same specificity, so whichever loads last wins — with the order reversed, a plain
-`bg-white` from your build would override the library's `dark:` defaults.
+Import it **after** your own Tailwind entry point. The `neutral` skin is plain
+utilities, so it competes with yours at equal specificity and load order decides —
+with the order reversed, a stray `bg-white` from your build would override the
+library's `dark:` defaults. [Themes](#themes) are not affected by this: they live in
+the `components` layer and always lose to your utilities, whatever the order.
 
 ## Quick start
 
 ```jsx
-import { Modal, useModal } from 'react-tailwind-flex-modal'
-import 'react-tailwind-flex-modal/styles.css'
+import { Modal, useModal } from 'tailwind-react-modal'
+import 'tailwind-react-modal/styles.css'
 
 function App() {
   const { isOpen, open, close } = useModal()
@@ -95,7 +110,7 @@ conditionally mounting the modal) so the exit animation can play.
 ### `simple` — a message and a close button
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/simple.png" alt="The simple modal: a title, a message and a single close button" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/simple.png" alt="The simple modal: a title, a message and a single outlined close button" width="720" />
 </p>
 
 ```jsx
@@ -112,7 +127,7 @@ conditionally mounting the modal) so the exit animation can play.
 ### `approval` — confirm or cancel
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a red warning badge, a title, a message, and cancel and confirm buttons" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/approval.png" alt="The approval modal: a vermillion warning badge, a title, a message, and cancel and confirm buttons" width="720" />
 </p>
 
 ```jsx
@@ -137,7 +152,7 @@ destructive red.
 ### `form` — wrap your own form
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/form.png" alt="The form modal wrapping a custom employee form with inputs, selects and date pickers" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/form.png" alt="The form modal wrapping a custom employee form with inputs, selects and date pickers" width="720" />
 </p>
 
 ```jsx
@@ -161,7 +176,7 @@ are wired into the dialog's `aria-labelledby` / `aria-describedby` automatically
 `Modal.Footer` lays out your buttons.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/composable.png" alt="A composable modal built from Modal.Header, Modal.Body and Modal.Footer, with custom Cancel and Confirm buttons" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/composable.png" alt="A composable modal built from Modal.Header, Modal.Body and Modal.Footer, with custom Cancel and Confirm buttons" width="720" />
 </p>
 
 ```jsx
@@ -195,7 +210,7 @@ panel docked to the bottom edge that slides up — the familiar mobile sheet pat
 Larger viewports are unaffected.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/mobile-sheet.png" alt="On a phone-sized viewport, the modal docks to the bottom of the screen as a full-width sheet with rounded top corners" width="320" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/mobile-sheet.png" alt="On a phone-sized viewport, the modal docks to the bottom of the screen as a full-width sheet with rounded top corners" width="320" />
 </p>
 
 ```jsx
@@ -262,6 +277,78 @@ Two things worth knowing:
   (`{show && <Modal/>}`), there is nothing left to animate, so the exit is skipped.
 - Users with `prefers-reduced-motion` get no animation at all and an instant close.
 
+## Themes
+
+Seven looks ship with the package. Pick one with the `theme` prop:
+
+```jsx
+<Modal theme='terminal' isOpen={isOpen} onClose={close}>
+  <Modal.Body>Nothing else to configure.</Modal.Body>
+</Modal>
+```
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neutral.png" alt="The neutral theme: the default. white panel, outlined cancel, red destructive confirm" width="100%" /><br /><code>neutral</code> — The default. White panel, outlined cancel, red destructive confirm.</td>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/terminal.png" alt="The terminal theme: dark navy window, traffic lights, monospace, blinking caret" width="100%" /><br /><code>terminal</code> — Dark navy window, traffic lights, monospace, blinking caret.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/brutalist.png" alt="The brutalist theme: flat 6px offset shadow instead of blur, 2px ink borders, vermillion confirm" width="100%" /><br /><code>brutalist</code> — Flat 6px offset shadow instead of blur, 2px ink borders, vermillion confirm.</td>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/glass.png" alt="The glass theme: frosted translucent panel over a heavily blurred backdrop" width="100%" /><br /><code>glass</code> — Frosted translucent panel over a heavily blurred backdrop.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/editorial.png" alt="The editorial theme: warm paper stock, serif title, hairline rules, small caps" width="100%" /><br /><code>editorial</code> — Warm paper stock, serif title, hairline rules, small caps.</td>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neon.png" alt="The neon theme: deep violet panel, glowing ring, gradient confirm" width="100%" /><br /><code>neon</code> — Deep violet panel, glowing ring, gradient confirm.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/minimal.png" alt="The minimal theme: no borders, no shadow — hierarchy carried by space alone" width="100%" /><br /><code>minimal</code> — No borders, no shadow — hierarchy carried by space alone.</td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+The registry is exported, so you can build a picker or read a theme's description:
+
+```jsx
+import { modalThemes, modalThemeNames } from 'tailwind-react-modal'
+
+modalThemeNames.map((name) => modalThemes[name].label)
+```
+
+**Why this needs no Tailwind config on your side.** The library compiles its own
+stylesheet, so every preset is already in `tailwind-react-modal/styles.css`. Themes
+are not bags of utility classes handed to your build — they are named classes
+resolved in Tailwind's `components` layer.
+
+That layer sits below `utilities` in the cascade, which is the point: **anything you
+pass through `classNames` beats a theme automatically**, whichever stylesheet loads
+first and with no `!` suffix.
+
+```jsx
+// A terminal window with a green confirm button.
+<Modal
+  theme='terminal'
+  variant='approval'
+  classNames={{ approveButton: 'bg-emerald-600 hover:bg-emerald-500' }}
+/>
+```
+
+### Window chrome
+
+The `terminal` theme renders a title bar with three macOS-style lights, the red one
+being the close button. Any theme can have one:
+
+```jsx
+<Modal titleBar titleBarLabel='guillaume@web — qa & dev' />
+<Modal theme='terminal' titleBar={false} />          {/* suppress it */}
+<Modal titleBar={<MyOwnBar />} />                    {/* replace it */}
+```
+
+`titleBarLabel` falls back to `title`. When the bar is on it replaces the corner "X",
+so there is still exactly one dismiss control in the tab order.
+
+The blinking caret the `terminal` theme appends to variant messages is available to
+free content as the `rtm-caret` class.
+
 ## Styling
 
 Every visual slot accepts extra Tailwind classes through `classNames`, appended after
@@ -273,8 +360,11 @@ the defaults:
     root: '',                        // fixed full-screen wrapper
     backdrop: 'bg-indigo-950/50',    // the blurred overlay
     panel: 'rounded-3xl',            // the white rounded panel
+    content: 'p-8',                  // the padded wrapper inside the panel
+    titleBar: 'bg-slate-800',        // the window chrome, when shown
     title: 'text-indigo-900',        // variant title
     message: 'text-base',            // variant message
+    icon: 'bg-amber-100',            // the approval warning badge
     closeButton: 'bg-slate-600',     // close/cancel button
     approveButton: 'bg-indigo-600',  // approve button
     dismissButton: 'text-slate-500'  // the top-right "X"
@@ -303,24 +393,58 @@ the colour props or `classNames` to get the old look back.
 Dark mode is driven by a `.dark` class on any ancestor (not the OS preference), which
 plays nicely with theme togglers:
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/dark.png" alt="The approval modal in dark mode: a dark panel over a near-black blurred backdrop" width="720" />
-</p>
+Every theme carries its own dark mode, not just a recolour:
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neutral-dark.png" alt="The neutral theme in dark mode: a zinc panel with a light title and a red confirm button" width="100%" /><br /><code>neutral</code></td>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/brutalist-dark.png" alt="The brutalist theme in dark mode: an ink panel with a yellow border and a vermillion offset shadow" width="100%" /><br /><code>brutalist</code></td>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/editorial-dark.png" alt="The editorial theme in dark mode: a dark brown panel with a cream serif title and hairline rules" width="100%" /><br /><code>editorial</code></td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/glass-dark.png" alt="The glass theme in dark mode: a translucent dark panel frosting the page behind it" width="100%" /><br /><code>glass</code></td>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neon-dark.png" alt="The neon theme in dark mode: a near-black violet panel with a glowing fuchsia ring and gradient confirm button" width="100%" /><br /><code>neon</code></td>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/minimal-dark.png" alt="The minimal theme in dark mode: a flat black panel with white type and no borders" width="100%" /><br /><code>minimal</code></td>
+  </tr>
+</table>
 
 ```html
 <html class="dark">
 ```
 
+## Migrating from v2
+
+The package was renamed. Nothing else changed — every prop, variant, slot and export
+works exactly as it did in 2.2.
+
+```diff
+-npm install react-tailwind-flex-modal
++npm install tailwind-react-modal
+```
+
+```diff
+-import { Modal, useModal } from 'react-tailwind-flex-modal'
+-import 'react-tailwind-flex-modal/styles.css'
++import { Modal, useModal } from 'tailwind-react-modal'
++import 'tailwind-react-modal/styles.css'
+```
+
+`react-tailwind-flex-modal` stays installable and stays on 2.2.0, but every release
+from here lands under the new name.
+
+New in 3.0: [themes](#themes), the `titleBar` / `titleBarLabel` props, and the
+`content` and `titleBar` `classNames` slots.
+
 ## Migrating from v1
 
 The full list of changes is in the
-[v2.0.0 release notes](https://github.com/Guillaume-da/react-tailwind-flex-modal/releases/tag/v2.0.0).
+[v2.0.0 release notes](https://github.com/Guillaume-da/tailwind-react-modal/releases/tag/v2.0.0).
 
 **v1 props still work.** They are marked `@deprecated` and resolve to the new ones, so
 existing code keeps running — but three things do change and are not shimmed:
 
-1. **The stylesheet moved.** `react-tailwind-flex-modal/dist/index.css` is now
-   `react-tailwind-flex-modal/styles.css`, and importing the component no longer pulls
+1. **The stylesheet moved.** `tailwind-react-modal/dist/index.css` is now
+   `tailwind-react-modal/styles.css`, and importing the component no longer pulls
    the CSS in as a side effect. **You must update this import.**
 2. **Tailwind 4 is required.** v1 was built against Tailwind 2.
 3. **The package is ESM-first** with an `exports` map (CJS still ships). Bundlers with
@@ -359,6 +483,9 @@ npm run dev
 The example app consumes the library from source via `file:..` and demonstrates every
 variant, the composable API, the mobile sheet and the `useModal` hook. The
 screenshots in this README are taken from it.
+
+It also carries a theme picker, so every shipped preset is one click away. The page
+itself keeps its own design system; the modals just take a `theme` prop.
 
 ## Contributing
 

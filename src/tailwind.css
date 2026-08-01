@@ -1,6 +1,11 @@
-@import 'tailwindcss';
+/* `source(none)` turns off automatic detection, which otherwise scans the whole
+   repo — the README's code blocks, the test file and the example app were all
+   leaking classes into the published stylesheet. The globs below cover exactly
+   the files that hold library class strings. */
+@import 'tailwindcss' source(none);
 
 @source './**/*.{ts,tsx}';
+@source not './index.test.tsx';
 
 /* v1 shipped `darkMode: 'class'`; keep that contract instead of v4's media default. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -13,6 +18,19 @@
 	--animate-pop-in: pop-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 	--animate-pop-out: pop-out 0.2s ease-in forwards;
 	--animate-slide-up-sheet: slide-up-sheet 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	--animate-caret-blink: caret-blink 1.06s steps(2, start) infinite;
+
+	@keyframes caret-blink {
+		0% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
 
 	@keyframes fade-in-down {
 		0% {
@@ -85,3 +103,6 @@
 		}
 	}
 }
+
+/* Preset skins, in the components layer so consumer utilities always win. */
+@import './Modal/themes.css';

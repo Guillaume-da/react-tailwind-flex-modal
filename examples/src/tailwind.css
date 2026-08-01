@@ -2,3 +2,34 @@
 
 /* Matches the library: dark mode is driven by a `.dark` class, not the OS. */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Misregister design system tokens. These live in the example app, not in the
+   library — they reach `<Modal>` through `classNames`, which is exactly the
+   theming path the README documents. */
+@theme {
+	--color-ds-base: #ffdd00;
+	--color-ds-base-deep: #ffc400;
+	--color-ds-surface: #ffffff;
+	--color-ds-ink: #12102e;
+	--color-ds-ink-soft: #4a4470;
+	--color-ds-ink-faint: #5a5382;
+	--color-ds-violet: #3d2bff;
+	--color-ds-vermillion: #ff3d00;
+	--color-ds-on-panel: #f4f2ff;
+	--color-ds-on-panel-soft: #8b84c4;
+
+	--font-display: 'Bricolage Grotesque', sans-serif;
+	--font-body: 'Instrument Sans', system-ui, sans-serif;
+	--font-mono: 'Martian Mono', ui-monospace, monospace;
+
+	/* The signature: a solid offset layer, never a blur. */
+	--shadow-ink: 6px 6px 0 0 #12102e;
+	--shadow-violet: 6px 6px 0 0 #3d2bff;
+	--shadow-vermillion: 6px 6px 0 0 #ff3d00;
+	--shadow-base: 6px 6px 0 0 #ffdd00;
+}
+
+body {
+	font-family: var(--font-body);
+	-webkit-font-smoothing: antialiased;
+}

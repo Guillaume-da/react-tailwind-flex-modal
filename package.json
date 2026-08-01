@@ -1,27 +1,31 @@
 {
-  "name": "react-tailwind-flex-modal",
-  "version": "2.2.0",
-  "description": "Accessible, animated React modal built with Tailwind CSS 4 — ready-made and composable layouts, focus trap, inert background, enter/exit animations, mobile bottom sheet, dark mode, zero dependencies",
+  "name": "tailwind-react-modal",
+  "version": "3.0.0",
+  "description": "Accessible, animated React modal for Tailwind CSS 4 — seven shipped themes (terminal, brutalist, glass, editorial, neon, minimal), ready-made and composable layouts, focus trap, inert background, mobile bottom sheet, dark mode, zero dependencies",
   "author": "Guillaume-da",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Guillaume-da/react-tailwind-flex-modal.git"
+    "url": "git+https://github.com/Guillaume-da/tailwind-react-modal.git"
   },
   "keywords": [
     "react",
     "tailwind",
-    "multipurpose-modal",
+    "tailwindcss",
     "modal",
-    "approval-modal",
     "dialog",
+    "react modal",
+    "tailwind modal",
+    "react tailwind modal",
+    "modal themes",
+    "themed modal",
+    "terminal ui",
     "accessible",
     "a11y",
     "focus-trap",
     "bottom-sheet",
     "animation",
-    "react tailwind modal",
-    "react tailwind multipurpose modal"
+    "approval-modal"
   ],
   "type": "module",
   "sideEffects": [
@@ -71,6 +75,7 @@
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^26.1.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "eslint": "^9.39.5",

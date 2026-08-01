@@ -1,55 +1,76 @@
 import { useEffect, useState } from 'react'
-import { Modal, useModal } from 'react-tailwind-flex-modal'
+import { Modal, modalThemes, modalThemeNames, useModal } from 'tailwind-react-modal'
 import Form from './components/Form'
 
+// The page keeps its own design system; the modals now use the presets the
+// library ships, picked from the toolbar. That is the whole point of the demo:
+// one prop, no `classNames` blob.
 const cardClass =
-  'group flex flex-col items-start gap-2 rounded-2xl border border-black/5 bg-white/70 p-5 text-left shadow-sm ring-1 ring-white/60 backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-black/10 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-white/10 dark:bg-white/5 dark:ring-white/5 dark:hover:border-white/20'
+  'group flex flex-col items-start gap-3 rounded-xl border-2 border-ds-ink bg-ds-surface p-6 text-left shadow-ink transition duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_0_var(--color-ds-vermillion)] focus:outline-none focus-visible:outline-3 focus-visible:outline-ds-ink focus-visible:outline-offset-3 dark:border-ds-base dark:bg-ds-ink dark:shadow-vermillion'
 
-const cardTitleClass =
-  'text-base font-semibold tracking-tight text-gray-900 dark:text-white'
+const flagClass =
+  'font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ds-ink-faint dark:text-ds-on-panel-soft'
 
-const cardTextClass = 'text-sm leading-6 text-gray-500 dark:text-gray-400'
+const tagClass =
+  'rounded-full border-2 border-ds-ink px-3 py-0.5 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ds-ink-soft dark:border-ds-base dark:text-ds-on-panel-soft'
 
-const footerButtonClass =
-  'inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-medium transition duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:ring-offset-zinc-900'
+const footerButtonBase =
+  'inline-flex h-11 items-center justify-center rounded-md border-2 px-6 font-semibold transition duration-200 ease-[cubic-bezier(.16,1,.3,1)] focus:outline-none focus-visible:outline-3 focus-visible:outline-ds-ink focus-visible:outline-offset-3'
 
-const secondaryButtonClass = `${footerButtonClass} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus-visible:ring-gray-400 dark:border-white/15 dark:bg-white/5 dark:text-gray-200 dark:hover:bg-white/10`
+const secondaryButtonClass = `${footerButtonBase} border-ds-ink bg-transparent text-ds-ink hover:bg-ds-ink hover:text-ds-base dark:border-ds-base dark:text-ds-base`
 
-const primaryButtonClass = `${footerButtonClass} bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 focus-visible:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400`
+const primaryButtonClass = `${footerButtonBase} border-ds-ink bg-ds-ink text-ds-base shadow-vermillion hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_0_var(--color-ds-vermillion)] dark:border-ds-base`
 
 const demos = [
   {
     id: 'simple',
     title: 'Simple',
-    text: 'A title, a message and a single close button.'
+    text: 'Un titre, un message, un seul bouton de fermeture.',
+    tag: 'variant'
   },
   {
     id: 'approval',
     title: 'Approval',
-    text: 'Confirm or cancel a destructive action.'
+    text: 'Confirmer ou annuler une action destructive.',
+    tag: 'variant'
   },
   {
     id: 'form',
     title: 'Form',
-    text: 'Wrap your own form in the dialog shell.'
+    text: 'Votre propre formulaire dans la coquille du dialogue.',
+    tag: 'variant'
+  },
+  {
+    id: 'terminal',
+    title: 'Terminal',
+    text: 'Chrome de fenêtre, points de feu, curseur clignotant.',
+    tag: 'theme'
   },
   {
     id: 'composable',
     title: 'Composable',
-    text: 'Header, Body and Footer, driven by useModal.'
+    text: 'Header, Body et Footer, pilotés par useModal.',
+    tag: 'api'
   },
   {
     id: 'sheet',
     title: 'Mobile sheet',
-    text: 'Docks to the bottom edge below the sm breakpoint.'
+    text: 'Ancré au bord bas sous le breakpoint sm.',
+    tag: 'api'
   }
 ]
+
+const Prompt = () => (
+  <span className='text-[#3fb950]'>guillaume@web:~$ </span>
+)
 
 function App() {
   const [variant, setVariant] = useState(null)
   const [dark, setDark] = useState(false)
+  const [theme, setTheme] = useState('brutalist')
   const composable = useModal()
   const sheet = useModal()
+  const terminal = useModal()
 
   // The library ships `darkMode: 'class'`, so the demo drives it explicitly
   // instead of following the OS — that keeps the screenshots reproducible.
@@ -63,46 +84,40 @@ function App() {
     simple: () => setVariant('simple'),
     approval: () => setVariant('approval'),
     form: () => setVariant('form'),
+    terminal: terminal.open,
     composable: composable.open,
     sheet: sheet.open
   }
 
   return (
-    <div className='relative min-h-screen overflow-hidden bg-slate-50 dark:bg-zinc-950'>
-      {/* Soft colour wash + grid, so the blurred backdrop has something to blur. */}
-      <div
-        aria-hidden='true'
-        className='pointer-events-none absolute inset-0 bg-[radial-gradient(55rem_38rem_at_12%_-8%,rgba(99,102,241,0.45),transparent_60%),radial-gradient(48rem_34rem_at_92%_6%,rgba(244,114,182,0.4),transparent_60%),radial-gradient(46rem_36rem_at_45%_112%,rgba(45,212,191,0.4),transparent_60%)] dark:bg-[radial-gradient(55rem_38rem_at_12%_-8%,rgba(99,102,241,0.5),transparent_60%),radial-gradient(48rem_34rem_at_92%_6%,rgba(219,39,119,0.4),transparent_60%),radial-gradient(46rem_36rem_at_45%_112%,rgba(13,148,136,0.45),transparent_60%)]'
-      />
-      <div
-        aria-hidden='true'
-        className='pointer-events-none absolute inset-0 opacity-[0.4] dark:opacity-[0.15] [background-image:linear-gradient(to_right,rgba(15,23,42,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.07)_1px,transparent_1px)] [background-size:56px_56px] dark:[background-image:linear-gradient(to_right,rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.12)_1px,transparent_1px)]'
-      />
-
+    <div className='min-h-screen bg-ds-base text-ds-ink dark:bg-ds-ink dark:text-ds-on-panel'>
       <Modal
+        theme={theme}
         variant='simple'
         isOpen={variant === 'simple'}
-        title='All set'
-        message='Your modal is working — this is the simple variant.'
-        closeLabel='Close'
+        title='Tout est en place'
+        message='Votre modal fonctionne — ceci est la variante simple.'
+        closeLabel='Fermer'
         onClose={close}
       />
 
       <Modal
+        theme={theme}
         variant='approval'
         isOpen={variant === 'approval'}
-        title='Delete this project?'
-        message='This permanently removes the project and every file in it. This action cannot be undone.'
-        approveLabel='Delete'
-        closeLabel='Cancel'
+        title='Supprimer ce dépôt ?'
+        message='Cette action retire définitivement le dépôt et tous ses fichiers. Elle est irréversible.'
+        approveLabel='Supprimer'
+        closeLabel='Annuler'
         onApprove={close}
         onClose={close}
       />
 
       <Modal
+        theme={theme}
         variant='form'
         isOpen={variant === 'form'}
-        ariaLabel='Employee form'
+        ariaLabel='Formulaire employé'
         size='lg'
         formComponent={<Form onClose={close} />}
         onClose={close}
@@ -110,57 +125,138 @@ function App() {
         closeOnBackdropClick={false}
       />
 
-      <Modal isOpen={composable.isOpen} onClose={composable.close} size='lg'>
-        <Modal.Header>Composable modal</Modal.Header>
+      <Modal
+        theme='terminal'
+        isOpen={terminal.isOpen}
+        onClose={terminal.close}
+        titleBarLabel='guillaume@web — qa & dev'
+        ariaLabel='Session terminal'
+        size='lg'
+      >
+        <Modal.Body className='space-y-1'>
+          <div>
+            <Prompt />
+            whoami
+          </div>
+          <div className='text-lg'>
+            <strong>QA &amp; Web Developer</strong>
+          </div>
+          <div>
+            <Prompt />
+            echo $motto
+          </div>
+          <div>
+            <em>
+              &quot;Ça marche sur ma machine — et sur les vôtres, j&apos;ai
+              vérifié.&quot;
+            </em>
+          </div>
+          <div>
+            <Prompt />
+            npx playwright test
+          </div>
+          <div>
+            <span className='text-[#3fb950]'>✓ 128 passed</span>{' '}
+            <span className='text-[#6e7681]'>
+              (chromium · firefox · webkit)
+            </span>
+          </div>
+          <div>
+            <span className='text-[#3fb950]'>stack</span>:{' '}
+            <span className='text-[#79c0ff]'>
+              Next.js React TypeScript C# Azure
+            </span>
+            {/* `.rtm-caret` ships with the library; the variants render it
+                automatically, free content asks for it. */}
+            <span aria-hidden='true' className='rtm-caret' />
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        theme={theme}
+        isOpen={composable.isOpen}
+        onClose={composable.close}
+        size='lg'
+      >
+        <Modal.Header>Modal composable</Modal.Header>
         <Modal.Body>
-          Free content built from Modal.Header, Modal.Body and Modal.Footer,
-          driven by the useModal hook. Close it with the X, Escape, the backdrop
-          or the buttons below.
+          Contenu libre construit avec Modal.Header, Modal.Body et Modal.Footer,
+          piloté par le hook useModal. Fermez-le avec le X, Échap, le fond ou les
+          boutons ci-dessous.
         </Modal.Body>
         <Modal.Footer>
           <button className={secondaryButtonClass} onClick={composable.close}>
-            Cancel
+            Annuler
           </button>
           <button className={primaryButtonClass} onClick={composable.close}>
-            Confirm
+            Confirmer
           </button>
         </Modal.Footer>
       </Modal>
 
-      <Modal isOpen={sheet.isOpen} onClose={sheet.close} mobileSheet size='sm'>
-        <Modal.Header>Mobile sheet</Modal.Header>
+      <Modal
+        theme={theme}
+        isOpen={sheet.isOpen}
+        onClose={sheet.close}
+        mobileSheet
+        size='sm'
+      >
+        <Modal.Header>Feuille mobile</Modal.Header>
         <Modal.Body>
-          Shrink the viewport below the sm breakpoint: this modal docks to the
-          bottom edge and slides up like a sheet.
+          Réduisez la fenêtre sous le breakpoint sm : le modal s&apos;ancre au
+          bord bas et glisse vers le haut.
         </Modal.Body>
       </Modal>
 
-      <div className='relative mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center px-6 py-16'>
-        <div className='flex items-start justify-between gap-4'>
+      <div className='mx-auto w-full max-w-[1200px] px-[clamp(1.25rem,4vw,3rem)] py-24'>
+        <div className='flex items-start justify-between gap-6'>
           <div>
-            <span className='inline-flex items-center rounded-full border border-black/5 bg-white/70 px-3 py-1 text-xs font-medium text-gray-600 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-gray-300'>
-              react-tailwind-flex-modal
-            </span>
-            <h1 className='mt-5 text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white'>
-              Accessible modals,
-              <br />
-              already styled.
+            <p className={`${flagClass} mb-6`}>
+              tailwind-react-modal · v3
+            </p>
+            <h1 className='font-display max-w-[13ch] text-[clamp(3rem,9vw,7.5rem)] leading-[0.86] font-extrabold tracking-[-0.045em]'>
+              Modals
+              <span className='text-ds-vermillion'>.</span>
             </h1>
-            <p className='mt-4 max-w-xl text-base leading-7 text-gray-500 dark:text-gray-400'>
-              Focus trap, inert background, scroll lock and enter/exit
-              animations. Pick a ready-made variant or compose your own.
+            <p className='mt-8 max-w-[60ch] text-lg text-ds-ink-soft dark:text-ds-on-panel-soft'>
+              Piège de focus, arrière-plan inerte, verrou de défilement et
+              animations d&apos;entrée et de sortie. Sept looks livrés avec la
+              librairie — <code className='font-mono'>theme=&quot;terminal&quot;</code>,
+              rien à configurer.
             </p>
           </div>
           <button
             type='button'
             onClick={() => setDark((value) => !value)}
-            className='shrink-0 rounded-full border border-black/5 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-200 dark:hover:bg-white/10'
+            className={`${secondaryButtonClass} shrink-0`}
           >
-            {dark ? 'Light' : 'Dark'}
+            {dark ? 'Clair' : 'Sombre'}
           </button>
         </div>
 
-        <div className='mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+        <div className='mt-16 border-t-2 border-ds-ink pt-6 dark:border-ds-base'>
+          <p className={flagClass}>--theme</p>
+          <div className='mt-3 flex flex-wrap gap-2'>
+            {modalThemeNames.map((name) => (
+              <button
+                key={name}
+                type='button'
+                onClick={() => setTheme(name)}
+                title={modalThemes[name].description}
+                className={`rounded-full border-2 px-4 py-1.5 font-mono text-[0.6875rem] uppercase tracking-[0.1em] transition ${
+                  theme === name
+                    ? 'border-ds-ink bg-ds-ink text-ds-base dark:border-ds-base dark:bg-ds-base dark:text-ds-ink'
+                    : 'border-ds-ink text-ds-ink-soft hover:bg-ds-ink/10 dark:border-ds-base dark:text-ds-on-panel-soft'
+                }`}
+              >
+                {modalThemes[name].label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className='mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3'>
           {demos.map((demo) => (
             <button
               key={demo.id}
@@ -168,11 +264,14 @@ function App() {
               className={cardClass}
               onClick={open[demo.id]}
             >
-              <span className={cardTitleClass}>{demo.title}</span>
-              <span className={cardTextClass}>{demo.text}</span>
-              <span className='mt-2 text-sm font-medium text-indigo-600 dark:text-indigo-400'>
-                Open →
+              <span className={flagClass}>--{demo.tag}</span>
+              <span className='font-display text-2xl font-bold tracking-[-0.02em]'>
+                {demo.title}
               </span>
+              <span className='text-sm text-ds-ink-soft dark:text-ds-on-panel-soft'>
+                {demo.text}
+              </span>
+              <span className={tagClass}>Ouvrir</span>
             </button>
           ))}
         </div>
