@@ -20,7 +20,7 @@ hard parts are already done for you:
   bottom-sheet presentation on mobile.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a white rounded panel over a blurred backdrop, with a warning title, a green confirm button and a red cancel button" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a white rounded panel over a blurred backdrop, with a red warning badge, a title, a neutral cancel button and a red confirm button" width="720" />
 </p>
 
 Requires **React 18 or 19** and **Tailwind CSS 4**.
@@ -54,6 +54,10 @@ Import the component and the stylesheet once:
 import { Modal } from 'react-tailwind-flex-modal'
 import 'react-tailwind-flex-modal/styles.css'
 ```
+
+Import it **after** your own Tailwind entry point. Both stylesheets emit utilities at
+the same specificity, so whichever loads last wins — with the order reversed, a plain
+`bg-white` from your build would override the library's `dark:` defaults.
 
 ## Quick start
 
@@ -108,7 +112,7 @@ conditionally mounting the modal) so the exit animation can play.
 ### `approval` — confirm or cancel
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a warning icon and title, a message, and confirm and cancel buttons" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a red warning badge, a title, a message, and cancel and confirm buttons" width="720" />
 </p>
 
 ```jsx
@@ -127,7 +131,8 @@ conditionally mounting the modal) so the exit animation can play.
 `onCancel` is optional; the cancel button falls back to `onClose`. The warning icon
 ships inline — pass any node to `warningIcon` to replace it. Focus lands on the
 **cancel** button when the modal opens, so a reflex press of Enter can never trigger
-the destructive action.
+the destructive action, and the confirm button — not the cancel one — carries the
+destructive red.
 
 ### `form` — wrap your own form
 
@@ -287,6 +292,11 @@ write them.
 
 The v2.0 colour props (`modalBackground`, `successTitleColor`, `closeButtonBgColor`,
 `buttonsTextColor`, …) still work but are deprecated in favour of `classNames`.
+
+**Changed in 2.2** — the default palette is neutral: the close/cancel button is an
+outlined secondary button instead of a solid red one, the `approval` confirm button
+carries the destructive red, and the `simple` title is no longer uppercase lime. Pass
+the colour props or `classNames` to get the old look back.
 
 ## Dark mode
 

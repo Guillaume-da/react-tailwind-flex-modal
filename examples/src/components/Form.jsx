@@ -1,197 +1,180 @@
-/* eslint-disable no-unused-expressions */
 /* eslint-disable react/prop-types */
 import React from 'react'
 
+const labelClass =
+  'block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400'
+
+const fieldClass =
+  'mt-2 block w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm transition placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-white/15 dark:bg-white/5 dark:text-gray-100 dark:placeholder:text-gray-500'
+
+const buttonBase =
+  'inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-medium transition duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:ring-offset-zinc-900'
+
+const cancelClass = `${buttonBase} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus-visible:ring-gray-400 dark:border-white/15 dark:bg-white/5 dark:text-gray-200 dark:hover:bg-white/10`
+
+const saveClass = `${buttonBase} bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 focus-visible:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400`
+
+const DEPARTMENTS = ['Engineering', 'Sales', 'Marketing', 'Legal']
+
+function Field({ label, htmlFor, className = '', children }) {
+  return (
+    <div className={className}>
+      <label className={labelClass} htmlFor={htmlFor}>
+        {label}
+      </label>
+      {children}
+    </div>
+  )
+}
+
 function FormModal(props) {
+  const form = {
+    firstName: props.firstName,
+    lastName: props.lastName,
+    startDate: props.startDate,
+    department: props.department,
+    birthdate: props.birthdate,
+    street: props.street,
+    city: props.city,
+    state: props.employeeState,
+    zipcode: props.zipcode
+  }
 
-	const form = {
-		firstName: props.firstName,
-		lastName: props.lastName,
-		startDate: props.startDate,
-		department: props.department,
-		birthdate: props.birthdate,
-		street: props.street,
-		city: props.city,
-		state: props.employeeState,
-		zipcode: props.zipcode
-	}
+  return (
+    <div className='w-full'>
+      <h2 className='pr-8 text-lg font-semibold tracking-tight text-gray-900 dark:text-white'>
+        New employee
+      </h2>
+      <p className='mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400'>
+        Your own form component, rendered inside the dialog shell.
+      </p>
 
-	// function handleFormSending(e) {
-	// 	// eslint-disable-next-line no-unused-expressions
-	// 	e.preventDefault
-	// 	console.log(form) 
-	// 	props.setShowModal(false) 
-	// 	props.setFormModal(false)
-	// }
-	console.log('form',props)
-	return (
-		<div className="w-full max-w-lg">
-			<div className="flex flex-wrap -mx-3 mb-2">
-				<div className="w-full md:w-1/2 px-3 ">
-					<label className="block uppercase tracking-wide text-gray-600 dark:text-gray-300 text-xs font-bold mb-2" htmlFor="grid-first-name">
-                    First Name
-					</label>
-					<input 
-						className="appearance-none block w-full bg-gray-200 text-gray-600 dark:text-gray-400 rounded py-3 px-4 leading-tight border border-gray-200 dark:border-zinc-800 focus:outline-none focus:bg-white dark:bg-zinc-800" 
-						id="grid-first-name" 
-						defaultValue={props.firstName}
-						type="text" 
-						placeholder={props.firstName} 
-						onChange={(e) => console.log(e.target.value)}
-					/>
-				</div>
-				<div className="w-full md:w-1/2 px-3">
-					<label className="block uppercase tracking-wide text-gray-600 dark:text-gray-300 text-xs font-bold mb-2" htmlFor="grid-last-name">
-                    Last Name
-					</label>
-					<input 
-						className="appearance-none block w-full bg-gray-200 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-zinc-800 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 dark:bg-zinc-800" 
-						id="grid-last-name" 
-						type="text" 
-						defaultValue={props.lastName}
-						placeholder={props.lastName} 
-						onChange={(e) => console.log(e.target.value)}
-					/>
-				</div>
-			</div>
-			<div className="w-full flex-1">
-				<div className="h-6 text-gray-600 dark:text-gray-300 text-xs font-bold uppercase leading-8 mb-2" >
-                Date of birth
-				</div>
-				<div className="my-2 flex rounded border border-gray-200 dark:border-zinc-800 bg-gray-200 text-gray-700 dark:bg-zinc-800 p-1" >
-					<input
-						defaultValue={props.birthdate}
-						placeholder={props.birthdate}
-						onChange={(e) => console.log(e.target.value)}
-						name="birthdate"
-						type="date"
-						className="w-full appearance-none p-1 px-2 bg-gray-200 text-gray-600 dark:text-gray-400 outline-none dark:bg-zinc-800"
-					/>
-				</div>
-			</div>
-			<div className="flex flex-wrap -mx-3 mt-4">
-				<div className="w-full md:w-1/2 px-3 mb-2">
-					<label className="block uppercase tracking-wide text-gray-600 dark:text-gray-300 text-xs font-bold mb-2" htmlFor="grid-state">
-                    Department
-					</label>
-					<div className="relative">
-						<select 
-							aria-label="Select"
-							className="block appearance-none w-full bg-gray-200 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-400 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
-							id="grid-state"
-							name="employeeState"
-							value={props.department}
-							placeholder={props.department} 
-							onChange={(e) => console.log(e.target.value)}
-						>	
-						<option value=''>Select a value</option>
-							
-						</select>
-						<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
-							<svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-						</div>
-					</div>
-				</div>
-				<div className="w-full md:w-1/2 px-3">
-					<label className="block uppercase tracking-wide text-gray-600 dark:text-gray-300 text-xs font-bold mb-2" htmlFor="grid-last-name">
-                    City
-					</label>
-					<input 
-						className="appearance-none block w-full bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-zinc-800 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
-						id="grid-last-name" 
-						type="text" 
-						defaultValue={props.city}
-						placeholder={props.city} 
-						onChange={(e) => props.setCity?.(e.target.value)}
-					/>
-				</div>
-			</div>
-			<div className="w-full flex-1">
-				<div className="h-6 text-gray-600 dark:text-gray-300 text-xs font-bold uppercase leading-8" >
-                Start Date
-				</div>
-				<div className="my-2 flex rounded border border-gray-200 dark:border-zinc-800 bg-gray-200 dark:bg-zinc-800 p-1" >
-					<input
-						defaultValue={props.startDate}
-						name="birthdate"
-						type="date"
-						onChange={(e) => props.setStartDate?.(e.target.value)}
-						className="w-full appearance-none p-1 px-2 bg-gray-200 text-gray-600 dark:text-gray-400 outline-none dark:bg-zinc-800"
-					/>
-				</div>
-			</div>
-			<div className="flex flex-wrap -mx-3 mb-3 mt-4">
-				<div className="w-full px-3">
-					<label className="block uppercase tracking-wide text-gray-600 dark:text-gray-300 text-xs font-bold mb-2" htmlFor="grid-password">
-                    Street
-					</label>
-					<input 
-						className="appearance-none block w-full bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-zinc-800 rounded py-3 px-4 mb-2 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
-						id="grid-password" 
-						type="text" 
-						defaultValue={props.street}
-						placeholder={props.street}
-						onChange={(e) => props.setStreet?.(e.target.value)}
-					/>
-				</div>
-			</div>
-			<div className="flex flex-wrap -mx-3 mb-2">
-				<div className="w-full md:w-1/3 px-3 mb-6 md:mb-0">
-					<label className="block uppercase tracking-wide text-gray-600 dark:text-gray-300 text-xs font-bold mb-2" htmlFor="grid-state">
-                    State
-					</label>
-					<div className="relative">
-						<select 
-							aria-label="Select"
-							className="block appearance-none w-full bg-gray-200 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-400 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
-							id="grid-state"
-							name="employeeState"
-							value={props.employeeState}
-							placeholder={props.employeeState} 
-							onChange={(e) => props.setEmployeeState?.(e.target.value)}
-						>
-							{props.statesList?.map((state, index) => {
-								return <option key={index} value={state.name} >{state.name} </option>
-							})}
-						</select>
-						<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
-							<svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-						</div>
-					</div>
-				</div>
-				<div className="w-full md:w-1/3 px-3 mb-6 md:mb-0">
-					<label className="block uppercase tracking-wide text-gray-600 dark:text-gray-300 text-xs font-bold mb-2" htmlFor="grid-zip">
-                    Zip
-					</label>
-					<input 
-						className="appearance-none block w-full bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-zinc-800 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
-						id="grid-zip" 
-						type="text" 
-						defaultValue={props.zipcode}
-						placeholder={props.zipcode} 
-						onChange={(e) => props.setZipcode?.(e.target.value)}
-					/>
-				</div>
-            
-			</div>
-			<div className="flex flex-wrap -mx-3 mt-6 mb-2">
-				<div className="w-full flex justify-between px-3">
-					<button 
-						className="w-5/12 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded"
-						onClick={props.onClose}
-					>
-                    Cancel
-					</button>
-					<button 
-						className="w-5/12 bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded"
-						onClick={() => console.log(form)}
-					>
-                    Save
-					</button>
-				</div>
-			</div>
-		</div>
-	)
+      <div className='mt-6 grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-6'>
+        <Field
+          label='First name'
+          htmlFor='first-name'
+          className='sm:col-span-3'
+        >
+          <input
+            id='first-name'
+            type='text'
+            className={fieldClass}
+            placeholder='Ada'
+            defaultValue={props.firstName}
+          />
+        </Field>
+
+        <Field label='Last name' htmlFor='last-name' className='sm:col-span-3'>
+          <input
+            id='last-name'
+            type='text'
+            className={fieldClass}
+            placeholder='Lovelace'
+            defaultValue={props.lastName}
+          />
+        </Field>
+
+        <Field
+          label='Date of birth'
+          htmlFor='birthdate'
+          className='sm:col-span-3'
+        >
+          <input
+            id='birthdate'
+            name='birthdate'
+            type='date'
+            className={fieldClass}
+            defaultValue={props.birthdate}
+          />
+        </Field>
+
+        <Field label='Start date' htmlFor='start-date' className='sm:col-span-3'>
+          <input
+            id='start-date'
+            name='startDate'
+            type='date'
+            className={fieldClass}
+            defaultValue={props.startDate}
+          />
+        </Field>
+
+        <Field label='Department' htmlFor='department' className='sm:col-span-3'>
+          <select
+            id='department'
+            name='department'
+            className={fieldClass}
+            defaultValue={props.department ?? ''}
+          >
+            <option value=''>Select a value</option>
+            {DEPARTMENTS.map((department) => (
+              <option key={department} value={department}>
+                {department}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label='City' htmlFor='city' className='sm:col-span-3'>
+          <input
+            id='city'
+            type='text'
+            className={fieldClass}
+            placeholder='London'
+            defaultValue={props.city}
+          />
+        </Field>
+
+        <Field label='Street' htmlFor='street' className='sm:col-span-6'>
+          <input
+            id='street'
+            type='text'
+            className={fieldClass}
+            placeholder='12 Marylebone Road'
+            defaultValue={props.street}
+          />
+        </Field>
+
+        <Field label='State' htmlFor='state' className='sm:col-span-3'>
+          <select
+            id='state'
+            name='employeeState'
+            className={fieldClass}
+            defaultValue={props.employeeState ?? ''}
+          >
+            <option value=''>Select a value</option>
+            {props.statesList?.map((state) => (
+              <option key={state.name} value={state.name}>
+                {state.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label='Zip' htmlFor='zip' className='sm:col-span-3'>
+          <input
+            id='zip'
+            type='text'
+            className={fieldClass}
+            placeholder='NW1 5LS'
+            defaultValue={props.zipcode}
+          />
+        </Field>
+      </div>
+
+      <div className='mt-8 flex justify-end gap-3'>
+        <button type='button' className={cancelClass} onClick={props.onClose}>
+          Cancel
+        </button>
+        <button
+          type='button'
+          className={saveClass}
+          onClick={() => console.log(form)}
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  )
 }
 
 export default FormModal
