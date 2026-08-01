@@ -1,48 +1,115 @@
-# A light, accessible Modal made with Tailwind
+# react-tailwind-flex-modal
 
 [![NPM](https://img.shields.io/npm/v/react-tailwind-flex-modal.svg)](https://www.npmjs.com/package/react-tailwind-flex-modal) [![CI](https://github.com/Guillaume-da/react-tailwind-flex-modal/actions/workflows/ci.yml/badge.svg)](https://github.com/Guillaume-da/react-tailwind-flex-modal/actions/workflows/ci.yml)
 
-Three ready-made modal layouts — a simple message, a confirm/cancel prompt, and a
-wrapper for your own form — with the accessibility plumbing already done: portal,
-`role="dialog"`, focus trap, focus restore, scroll lock, Escape and backdrop dismissal.
+An accessible, animated React modal built with Tailwind CSS — **zero runtime
+dependencies** beyond React itself.
 
-Requires React 18 or 19 and Tailwind CSS 4.
+Use one of the three ready-made layouts (message, confirm/cancel, form wrapper), or
+compose your own content with `Modal.Header` / `Modal.Body` / `Modal.Footer`. The
+hard parts are already done for you:
 
-## Install
+- **Accessibility** — `role="dialog"`, `aria-modal`, automatic labelling, focus trap,
+  focus restore, and an [`inert`](https://developer.mozilla.org/docs/Web/HTML/Global_attributes/inert)
+  background so keyboard and screen-reader users can never wander behind the modal.
+- **Animations** — the backdrop fades while the panel pops in and out on separate
+  timings, including a real exit animation before unmount. `prefers-reduced-motion`
+  is respected.
+- **Polish** — blurred backdrop, scroll lock that compensates the scrollbar width so
+  the page never shifts, a top-right "X" button, dark mode, and an optional
+  bottom-sheet presentation on mobile.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a white rounded panel over a blurred backdrop, with a warning title, a green confirm button and a red cancel button" width="720" />
+</p>
+
+Requires **React 18 or 19** and **Tailwind CSS 4**.
+
+## Table of contents
+
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [The three variants](#the-three-variants)
+- [Composable API](#composable-api)
+- [The useModal hook](#the-usemodal-hook)
+- [Mobile bottom sheet](#mobile-bottom-sheet)
+- [Behaviour & accessibility](#behaviour--accessibility)
+- [Sizes and stacking](#sizes-and-stacking)
+- [Animations](#animations)
+- [Styling](#styling)
+- [Dark mode](#dark-mode)
+- [Migrating from v1](#migrating-from-v1)
+- [Running the examples](#running-the-examples)
+- [Contributing](#contributing)
+
+## Installation
 
 ```bash
 npm install react-tailwind-flex-modal
 ```
 
-Import the component and the stylesheet:
+Import the component and the stylesheet once:
 
 ```jsx
 import { Modal } from 'react-tailwind-flex-modal'
 import 'react-tailwind-flex-modal/styles.css'
 ```
 
-## Usage
-
-Pick a layout with `variant`, and hand it a single `onClose`.
-
-### Simple
+## Quick start
 
 ```jsx
-const [isOpen, setIsOpen] = useState(false)
+import { Modal, useModal } from 'react-tailwind-flex-modal'
+import 'react-tailwind-flex-modal/styles.css'
 
+function App() {
+  const { isOpen, open, close } = useModal()
+
+  return (
+    <>
+      <button onClick={open}>Show me</button>
+
+      <Modal
+        variant='simple'
+        isOpen={isOpen}
+        title='CONGRATULATIONS!'
+        message='Your modal is working.'
+        closeLabel='Close'
+        onClose={close}
+      />
+    </>
+  )
+}
+```
+
+Everything is driven by two props: `isOpen` decides whether the modal shows, and
+`onClose` is called for **every** dismissal — the close button, the "X", the Escape
+key, and the backdrop click. Keep `isOpen` mounted and toggle it (rather than
+conditionally mounting the modal) so the exit animation can play.
+
+## The three variants
+
+### `simple` — a message and a close button
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/simple.png" alt="The simple modal: a title, a message and a single close button" width="720" />
+</p>
+
+```jsx
 <Modal
   variant='simple'
   isOpen={isOpen}
   title='CONGRATULATIONS!'
   message='Your modal is working.'
   closeLabel='Close'
-  onClose={() => setIsOpen(false)}
+  onClose={close}
 />
 ```
 
-`isOpen` is optional — omit it and mount the modal conditionally yourself.
+### `approval` — confirm or cancel
 
-### Approval
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a warning icon and title, a message, and confirm and cancel buttons" width="720" />
+</p>
 
 ```jsx
 <Modal
@@ -53,74 +120,185 @@ const [isOpen, setIsOpen] = useState(false)
   approveLabel='Yes do it !'
   closeLabel='Cancel'
   onApprove={remove}
-  onClose={() => setIsOpen(false)}
+  onClose={close}
 />
 ```
 
 `onCancel` is optional; the cancel button falls back to `onClose`. The warning icon
-ships inline — pass any node to `warningIcon` to replace it.
+ships inline — pass any node to `warningIcon` to replace it. Focus lands on the
+**cancel** button when the modal opens, so a reflex press of Enter can never trigger
+the destructive action.
 
-### Form
+### `form` — wrap your own form
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/form.png" alt="The form modal wrapping a custom employee form with inputs, selects and date pickers" width="720" />
+</p>
 
 ```jsx
 <Modal
   variant='form'
   isOpen={isOpen}
   ariaLabel='Signup form'
-  formComponent={<MyForm onClose={() => setIsOpen(false)} />}
-  onClose={() => setIsOpen(false)}
+  formComponent={<MyForm onClose={close} />}
+  onClose={close}
   closeOnBackdropClick={false}
 />
 ```
 
-A form has no title, so give the dialog a name with `ariaLabel`. Turning off
-`closeOnBackdropClick` avoids losing input to a stray click.
+A form has no title, so give the dialog an accessible name with `ariaLabel`. Turning
+off `closeOnBackdropClick` avoids losing input to a stray click.
 
-## Accessibility & behaviour
+## Composable API
+
+Skip `variant` entirely and bring your own content. `Modal.Header` and `Modal.Body`
+are wired into the dialog's `aria-labelledby` / `aria-describedby` automatically, and
+`Modal.Footer` lays out your buttons.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/composable.png" alt="A composable modal built from Modal.Header, Modal.Body and Modal.Footer, with custom Cancel and Confirm buttons" width="720" />
+</p>
+
+```jsx
+<Modal isOpen={isOpen} onClose={close} size='lg'>
+  <Modal.Header>Composable modal</Modal.Header>
+  <Modal.Body>
+    Any content you like. Header, Body and Footer are optional and each
+    accepts a className.
+  </Modal.Body>
+  <Modal.Footer>
+    <button onClick={close}>Cancel</button>
+    <button onClick={confirm}>Confirm</button>
+  </Modal.Footer>
+</Modal>
+```
+
+## The useModal hook
+
+A tiny optional helper so you don't have to write the same `useState` in every
+component:
+
+```jsx
+const { isOpen, open, close, toggle } = useModal()
+// useModal(true) starts open
+```
+
+## Mobile bottom sheet
+
+With `mobileSheet`, viewports below Tailwind's `sm` breakpoint get a full-width
+panel docked to the bottom edge that slides up — the familiar mobile sheet pattern.
+Larger viewports are unaffected.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/mobile-sheet.png" alt="On a phone-sized viewport, the modal docks to the bottom of the screen as a full-width sheet with rounded top corners" width="320" />
+</p>
+
+```jsx
+<Modal isOpen={isOpen} onClose={close} mobileSheet>
+  <Modal.Header>Mobile sheet</Modal.Header>
+  <Modal.Body>Docked to the bottom edge on small screens.</Modal.Body>
+</Modal>
+```
+
+## Behaviour & accessibility
 
 The modal renders through a portal into `document.body`, so it can't be clipped by an
-`overflow-hidden` or transformed parent. It is exposed as `role="dialog"` /
-`aria-modal="true"`, labelled by its title and described by its message.
+`overflow-hidden` or transformed parent. While open, it:
 
-While open it moves focus to the close button — never the approve button, so a reflex
-Enter can't fire a destructive action — keeps Tab and Shift+Tab cycling inside the
-dialog, locks background scrolling, and returns focus to whatever was focused before it
-opened.
+- exposes itself as `role="dialog"` / `aria-modal="true"`, labelled by its title and
+  described by its message;
+- moves focus inside and keeps Tab / Shift+Tab cycling within the dialog;
+- marks everything else on the page `inert`, so assistive tech can't escape it;
+- locks background scrolling **and compensates the scrollbar width**, so the page
+  layout doesn't shift behind the backdrop;
+- returns focus to whatever was focused before it opened.
 
-It is dismissed by Escape, the close button, or a backdrop click.
+It is dismissed by the Escape key, the close/cancel button, the top-right "X", or a
+backdrop click — all funnelled into your single `onClose`.
 
 | Prop | Default | Effect |
 | --- | --- | --- |
+| `isOpen` | — | `false` hides the modal (with an exit animation); omit to control mounting yourself |
+| `onClose` | — | Called for every dismissal |
 | `closeOnBackdropClick` | `true` | Dismiss when the backdrop is clicked |
 | `closeOnEscape` | `true` | Dismiss on the Escape key |
+| `showCloseButton` | `true` | Render the "X" button in the top-right corner |
+| `closeButtonAriaLabel` | `'Close dialog'` | Accessible name of the "X" button |
+| `ariaLabel` | — | Accessible name when nothing else provides a title |
 | `usePortal` | `true` | Render into `document.body` rather than in place |
 | `portalContainer` | `document.body` | Portal target |
-| `ariaLabel` | — | Accessible name when the variant renders no title |
+
+## Sizes and stacking
+
+| Prop | Default | Effect |
+| --- | --- | --- |
+| `size` | `'md'` | Panel width: `'sm'`, `'md'`, `'lg'`, `'xl'` or `'full'` (full screen) |
+| `zIndex` | `50` | `z-index` of the modal root |
+| `mobileSheet` | `false` | Bottom-sheet presentation below the `sm` breakpoint |
+
+Stacked modals are supported: each one adds `inert` around itself and the scroll lock
+is reference-counted, so closing the top modal restores exactly the state underneath.
+
+## Animations
+
+By default the backdrop fades (`animate-fade-in` / `animate-fade-out`) while the
+panel pops (`animate-pop-in` / `animate-pop-out`), on separate timings. Override
+either side with any animation class — `animate-fade-in-up`, `animate-fade-in-down`
+and `animate-fade-in` also ship with the stylesheet:
+
+```jsx
+<Modal animation='animate-fade-in-up' exitAnimation='animate-fade-out' ... />
+```
+
+Two things worth knowing:
+
+- The exit animation plays when `isOpen` flips to `false`; the modal unmounts itself
+  once the animation ends. If you mount the modal conditionally
+  (`{show && <Modal/>}`), there is nothing left to animate, so the exit is skipped.
+- Users with `prefers-reduced-motion` get no animation at all and an instant close.
 
 ## Styling
 
-Dark mode is driven by a `.dark` class on an ancestor. Every colour is a Tailwind class
-you can override:
+Every visual slot accepts extra Tailwind classes through `classNames`, appended after
+the defaults:
 
 ```jsx
-const modalBackground = 'bg-white'
-const darkModalBackground = 'dark:bg-zinc-800'
-const successTitleColor = 'text-lime-600'
-const darkSuccessTitleColor = 'dark:text-lime-600'
-const warningTitleColor = 'text-red-500'
-const messageTextColor = 'text-gray-500'
-const approveButtonBgColor = 'bg-lime-600'
-const darkApproveButtonBgColor = 'dark:bg-lime-600'
-const closeButtonBgColor = 'bg-red-600'
-const buttonsTextColor = 'text-white'
+<Modal
+  classNames={{
+    root: '',                        // fixed full-screen wrapper
+    backdrop: 'bg-indigo-950/50',    // the blurred overlay
+    panel: 'rounded-3xl',            // the white rounded panel
+    title: 'text-indigo-900',        // variant title
+    message: 'text-base',            // variant message
+    closeButton: 'bg-slate-600',     // close/cancel button
+    approveButton: 'bg-indigo-600',  // approve button
+    dismissButton: 'text-slate-500'  // the top-right "X"
+  }}
+  ...
+/>
 ```
 
-Classes you pass must be reachable by *your* Tailwind build, not the library's.
+`Modal.Header`, `Modal.Body` and `Modal.Footer` each accept their own `className`
+too.
 
-Animation defaults to fade in up; `animate-fade-in-down` and `animate-fade-in` also ship:
+Classes you pass must be reachable by **your** Tailwind build, not the library's —
+they end up in your markup, so your `@source` globs must cover the files where you
+write them.
 
-```jsx
-<Modal animation='animate-fade-in' ... />
+The v2.0 colour props (`modalBackground`, `successTitleColor`, `closeButtonBgColor`,
+`buttonsTextColor`, …) still work but are deprecated in favour of `classNames`.
+
+## Dark mode
+
+Dark mode is driven by a `.dark` class on any ancestor (not the OS preference), which
+plays nicely with theme togglers:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/dark.png" alt="The approval modal in dark mode: a dark panel over a near-black blurred backdrop" width="720" />
+</p>
+
+```html
+<html class="dark">
 ```
 
 ## Migrating from v1
@@ -160,7 +338,7 @@ directly and left your `currentModal` state untouched. That quirk is preserved f
 `setShowModal` users, but once you move to `onClose` every dismissal — button, Escape,
 backdrop — runs the same handler.
 
-## Examples
+## Running the examples
 
 ```bash
 cd examples
@@ -168,7 +346,9 @@ npm install
 npm run dev
 ```
 
-The example app consumes the library from source via `file:..`.
+The example app consumes the library from source via `file:..` and demonstrates every
+variant, the composable API, the mobile sheet and the `useModal` hook. The
+screenshots in this README are taken from it.
 
 ## Contributing
 
