@@ -60,9 +60,7 @@ const demos = [
   }
 ]
 
-const Prompt = () => (
-  <span className='text-[#3fb950]'>guillaume@web:~$ </span>
-)
+const Prompt = () => <span className='text-[#3fb950]'>you@localhost:~$ </span>
 
 function App() {
   const [variant, setVariant] = useState(null)
@@ -129,43 +127,36 @@ function App() {
         theme='terminal'
         isOpen={terminal.isOpen}
         onClose={terminal.close}
-        titleBarLabel='guillaume@web — qa & dev'
+        titleBarLabel='you@localhost — ~/projects'
         ariaLabel='Session terminal'
         size='lg'
       >
         <Modal.Body className='space-y-1'>
           <div>
             <Prompt />
-            whoami
+            npm install tailwind-react-modal
           </div>
-          <div className='text-lg'>
-            <strong>QA &amp; Web Developer</strong>
+          <div>
+            <span className='text-[#3fb950]'>added 1 package</span>{' '}
+            <span className='text-[#6e7681]'>in 1.2s</span>
           </div>
           <div>
             <Prompt />
-            echo $motto
+            cat App.jsx
           </div>
           <div>
-            <em>
-              &quot;Ça marche sur ma machine — et sur les vôtres, j&apos;ai
-              vérifié.&quot;
-            </em>
+            <em>&lt;Modal theme=&quot;terminal&quot; isOpen={'{isOpen}'} /&gt;</em>
           </div>
           <div>
             <Prompt />
-            npx playwright test
+            npm test
           </div>
           <div>
-            <span className='text-[#3fb950]'>✓ 128 passed</span>{' '}
-            <span className='text-[#6e7681]'>
-              (chromium · firefox · webkit)
-            </span>
+            <span className='text-[#3fb950]'>✓ 85 passed</span>{' '}
+            <span className='text-[#6e7681]'>(types · unit · lint · build)</span>
           </div>
           <div>
-            <span className='text-[#3fb950]'>stack</span>:{' '}
-            <span className='text-[#79c0ff]'>
-              Next.js React TypeScript C# Azure
-            </span>
+            <strong>Aucune configuration Tailwind requise.</strong>
             {/* `.rtm-caret` ships with the library; the variants render it
                 automatically, free content asks for it. */}
             <span aria-hidden='true' className='rtm-caret' />

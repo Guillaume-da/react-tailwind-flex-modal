@@ -22,14 +22,6 @@ hard parts are already done for you:
   the page never shifts, a top-right "X" button, dark mode, and an optional
   bottom-sheet presentation on mobile.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/terminal.png" alt="The terminal theme: a dark navy window with three traffic-light dots, a centered monospace title, a green shell prompt, white output, an amber quoted string and a blinking caret" width="820" />
-</p>
-
-<p align="center">
-  <em><code>theme='terminal'</code> — one prop, nothing to configure.</em>
-</p>
-
 ## The seven themes
 
 <table>
