@@ -118,6 +118,8 @@ export interface ModalClassNames {
 	panel?: string;
 	title?: string;
 	message?: string;
+	/** The round badge holding the `approval` variant's warning icon. */
+	icon?: string;
 	closeButton?: string;
 	approveButton?: string;
 	/** The "X" button in the top-right corner. */
@@ -544,7 +546,9 @@ const ModalRoot = (props: ModalProps): React.JSX.Element | null => {
 			return (
 				<div className='flex flex-col items-center text-center'>
 					<span
-						className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400'
+						className={`mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400 ${
+							slots?.icon ?? ''
+						}`}
 					>
 						{props.warningIcon ?? <DefaultWarningIcon />}
 					</span>

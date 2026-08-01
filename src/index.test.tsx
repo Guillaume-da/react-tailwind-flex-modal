@@ -667,6 +667,20 @@ describe('Modal', () => {
 			expect(getByRole('dialog').className).toContain('custom-panel')
 			expect(getByText('Close').className).toContain('custom-close')
 		})
+
+		it('themes the warning icon badge through the icon slot', () => {
+			const { getByTestId } = render(
+				<Modal
+					{...baseProps}
+					variant='approval'
+					warningIcon={<i data-testid='icon' />}
+					classNames={{ icon: 'custom-badge' }}
+				/>
+			)
+			expect(getByTestId('icon').parentElement?.className).toContain(
+				'custom-badge'
+			)
+		})
 	})
 
 	describe('composable API', () => {

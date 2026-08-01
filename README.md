@@ -20,8 +20,13 @@ hard parts are already done for you:
   bottom-sheet presentation on mobile.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a white rounded panel over a blurred backdrop, with a red warning badge, a title, a neutral cancel button and a red confirm button" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a white panel with a 2px ink border and a hard offset shadow, a vermillion warning badge, a title, an outlined cancel button and a vermillion confirm button" width="720" />
 </p>
+
+> The screenshots below come from the example app, which themes the modal with its
+> own design system through [`classNames`](#styling). The library's own defaults are
+> deliberately neutral — you get a plain white panel, an outlined cancel button and a
+> red confirm button, not this palette.
 
 Requires **React 18 or 19** and **Tailwind CSS 4**.
 
@@ -95,7 +100,7 @@ conditionally mounting the modal) so the exit animation can play.
 ### `simple` — a message and a close button
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/simple.png" alt="The simple modal: a title, a message and a single close button" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/simple.png" alt="The simple modal: a title, a message and a single outlined close button" width="720" />
 </p>
 
 ```jsx
@@ -112,7 +117,7 @@ conditionally mounting the modal) so the exit animation can play.
 ### `approval` — confirm or cancel
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a red warning badge, a title, a message, and cancel and confirm buttons" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/approval.png" alt="The approval modal: a vermillion warning badge, a title, a message, and cancel and confirm buttons" width="720" />
 </p>
 
 ```jsx
@@ -275,6 +280,7 @@ the defaults:
     panel: 'rounded-3xl',            // the white rounded panel
     title: 'text-indigo-900',        // variant title
     message: 'text-base',            // variant message
+    icon: 'bg-amber-100',            // the approval warning badge
     closeButton: 'bg-slate-600',     // close/cancel button
     approveButton: 'bg-indigo-600',  // approve button
     dismissButton: 'text-slate-500'  // the top-right "X"
@@ -304,7 +310,7 @@ Dark mode is driven by a `.dark` class on any ancestor (not the OS preference), 
 plays nicely with theme togglers:
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/dark.png" alt="The approval modal in dark mode: a dark panel over a near-black blurred backdrop" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/react-tailwind-flex-modal/master/docs/screenshots/dark.png" alt="The approval modal in dark mode: an ink panel with a yellow border and a vermillion offset shadow" width="720" />
 </p>
 
 ```html
@@ -359,6 +365,10 @@ npm run dev
 The example app consumes the library from source via `file:..` and demonstrates every
 variant, the composable API, the mobile sheet and the `useModal` hook. The
 screenshots in this README are taken from it.
+
+It also doubles as a theming test: every modal there is restyled with a design system
+of its own — flat offset shadows, 2px borders, its own type scale — passed in entirely
+through `classNames` and the two background props. Nothing in `src/` knows about it.
 
 ## Contributing
 
