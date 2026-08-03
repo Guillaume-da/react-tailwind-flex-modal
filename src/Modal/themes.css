@@ -256,8 +256,11 @@
 		background-image: linear-gradient(140deg, #f0a6ff, #7c5cff 45%, #5fd0ff);
 	}
 
+	/* Inherited rather than fixed, so the fill still follows the panel when a
+	   utility reshapes it — `mobileSheet` squares off the bottom corners. */
 	.rtm-theme-neon .rtm-content {
-		@apply rounded-[25px] bg-[#0b0420]/92 p-6 backdrop-blur-xl;
+		@apply bg-[#0b0420]/92 p-6 backdrop-blur-xl;
+		border-radius: inherit;
 	}
 
 	.rtm-theme-neon .rtm-title {
