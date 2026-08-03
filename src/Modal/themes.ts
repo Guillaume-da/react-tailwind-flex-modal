@@ -20,6 +20,10 @@ export type ModalTheme =
 	| 'editorial'
 	| 'neon'
 	| 'minimal'
+	| 'pop'
+	| 'liquid'
+	| 'command'
+	| 'elevated'
 
 export interface ModalThemeInfo {
 	name: ModalTheme;
@@ -72,7 +76,8 @@ export const modalThemes: Record<ModalTheme, ModalThemeInfo> = {
 	neon: {
 		name: 'neon',
 		label: 'Neon',
-		description: 'Deep violet panel, glowing ring, gradient confirm button.',
+		description:
+			'Coloured halo, 1.5px gradient hairline, gradient confirm button.',
 		className: 'rtm-theme-neon'
 	},
 	minimal: {
@@ -80,6 +85,34 @@ export const modalThemes: Record<ModalTheme, ModalThemeInfo> = {
 		label: 'Minimal',
 		description: 'No borders, no shadow — hierarchy carried by space alone.',
 		className: 'rtm-theme-minimal'
+	},
+	pop: {
+		name: 'pop',
+		label: 'Pop',
+		description:
+			'Saturated backdrop, cream panel, multicolour ribbon, oversized title.',
+		className: 'rtm-theme-pop'
+	},
+	liquid: {
+		name: 'liquid',
+		label: 'Liquid',
+		description:
+			'Tinted glass: thick blur, specular top edge, long shadow, pill buttons.',
+		className: 'rtm-theme-liquid'
+	},
+	command: {
+		name: 'command',
+		label: 'Command',
+		description:
+			'Command-palette chrome — tight rhythm, chevron title, amber confirm.',
+		className: 'rtm-theme-command'
+	},
+	elevated: {
+		name: 'elevated',
+		label: 'Elevated',
+		description:
+			'Dark-native: zinc panel, light hairline instead of a grey border, sky confirm.',
+		className: 'rtm-theme-elevated'
 	}
 }
 
