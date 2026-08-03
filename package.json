@@ -1,7 +1,7 @@
 {
   "name": "tailwind-react-modal",
-  "version": "3.0.2",
-  "description": "Accessible, animated React modal for Tailwind CSS 4 \u2014 seven shipped themes (terminal, brutalist, glass, editorial, neon, minimal), ready-made and composable layouts, focus trap, inert background, mobile bottom sheet, dark mode, zero dependencies",
+  "version": "3.1.0",
+  "description": "Accessible, animated React modal for Tailwind CSS 4 — eleven shipped themes (terminal, brutalist, glass, editorial, neon, minimal, pop, liquid, command, elevated), ready-made and composable layouts, focus trap, inert background, mobile bottom sheet, dark mode, zero dependencies",
   "author": "Guillaume-da",
   "license": "MIT",
   "repository": {
