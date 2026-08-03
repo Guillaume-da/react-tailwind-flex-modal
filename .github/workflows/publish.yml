@@ -20,14 +20,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Deliberately no `registry-url`: that writes an .npmrc pinning
+      # `_authToken=${NODE_AUTH_TOKEN}`, and with no token in the environment
+      # npm sends setup-node's placeholder instead of exchanging the OIDC
+      # token. The registry answers 404, which reads like a missing package.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-          registry-url: https://registry.npmjs.org
 
       # Trusted publishing needs npm 11.5.1+; Node 24 still ships npm 11.0.x.
       - run: npm install -g npm@latest
+
+      - run: npm --version
 
       - run: npm ci
 
