@@ -212,7 +212,7 @@ function App() {
             </h1>
             <p className='mt-8 max-w-[60ch] text-lg text-ds-ink-soft dark:text-ds-on-panel-soft'>
               Piège de focus, arrière-plan inerte, verrou de défilement et
-              animations d&apos;entrée et de sortie. Sept looks livrés avec la
+              animations d&apos;entrée et de sortie. Onze looks livrés avec la
               librairie — <code className='font-mono'>theme=&quot;terminal&quot;</code>,
               rien à configurer.
             </p>

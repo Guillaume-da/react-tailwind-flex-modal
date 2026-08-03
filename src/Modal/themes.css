@@ -243,15 +243,21 @@
 	/* Neon ---------------------------------------------------------------- */
 
 	.rtm-theme-neon .rtm-backdrop {
-		@apply bg-[#05010f]/80 backdrop-blur-sm;
+		@apply bg-[#05010f]/85 backdrop-blur-sm;
+		background-image:
+			radial-gradient(40rem 40rem at 18% 0%, rgba(168, 85, 247, 0.45), transparent 60%),
+			radial-gradient(36rem 36rem at 86% 100%, rgba(56, 189, 248, 0.35), transparent 60%);
 	}
 
+	/* The 1.5px padding *is* the border: the gradient is the panel's own
+	   background and the content sits on top of it, inset by that padding. */
 	.rtm-theme-neon .rtm-panel {
-		@apply rounded-2xl ring-1 ring-fuchsia-400/40 shadow-[0_0_60px_-10px_rgba(217,70,239,0.55)];
+		@apply rounded-[26px] p-[1.5px] shadow-[0_0_60px_-10px_rgba(150,80,255,0.7)];
+		background-image: linear-gradient(140deg, #f0a6ff, #7c5cff 45%, #5fd0ff);
 	}
 
 	.rtm-theme-neon .rtm-content {
-		@apply bg-[#0b0420] p-6;
+		@apply rounded-[25px] bg-[#0b0420]/92 p-6 backdrop-blur-xl;
 	}
 
 	.rtm-theme-neon .rtm-title {
@@ -344,6 +350,231 @@
 
 	.dark .rtm-theme-minimal .rtm-approve {
 		@apply bg-white text-black hover:bg-neutral-200;
+	}
+
+	/* Pop ----------------------------------------------------------------- */
+
+	.rtm-theme-pop .rtm-backdrop {
+		@apply bg-indigo-500;
+		background-image:
+			radial-gradient(circle at 25% 15%, rgba(56, 189, 248, 0.9), transparent 55%),
+			radial-gradient(circle at 80% 85%, rgba(240, 57, 155, 0.85), transparent 55%);
+	}
+
+	.rtm-theme-pop .rtm-panel {
+		@apply rounded-[28px] shadow-[0_30px_60px_-20px_rgba(30,27,75,0.7)];
+	}
+
+	/* The ribbon is punctuation, not content: a pseudo-element keeps it out of
+	   the DOM and out of the accessibility tree. 6px clears the "X" at top-3. */
+	.rtm-theme-pop .rtm-panel::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 auto;
+		height: 6px;
+		background: linear-gradient(90deg, #f43f5e, #fcd34d 40%, #38bdf8 75%, #d946ef);
+	}
+
+	.rtm-theme-pop .rtm-content {
+		@apply bg-amber-50 px-6 pb-6 pt-8;
+	}
+
+	.rtm-theme-pop .rtm-title {
+		@apply text-3xl leading-none font-bold tracking-tighter text-indigo-950;
+	}
+
+	.rtm-theme-pop .rtm-message {
+		@apply text-[15px] leading-relaxed text-indigo-900/60;
+	}
+
+	.rtm-theme-pop .rtm-icon {
+		@apply rounded-2xl bg-indigo-950/10 text-indigo-950;
+	}
+
+	.rtm-theme-pop .rtm-close {
+		@apply rounded-2xl text-indigo-900/60 hover:bg-indigo-900/5 hover:text-indigo-950;
+	}
+
+	.rtm-theme-pop .rtm-approve {
+		@apply rounded-2xl bg-indigo-950 font-semibold text-amber-50 hover:bg-rose-500;
+	}
+
+	.rtm-theme-pop .rtm-dismiss {
+		@apply rounded-full text-indigo-900/40 hover:bg-indigo-900/10 hover:text-indigo-950;
+	}
+
+	.dark .rtm-theme-pop .rtm-content {
+		@apply bg-indigo-950;
+	}
+
+	.dark .rtm-theme-pop .rtm-title {
+		@apply text-amber-50;
+	}
+
+	.dark .rtm-theme-pop .rtm-message {
+		@apply text-indigo-200/70;
+	}
+
+	.dark .rtm-theme-pop .rtm-icon {
+		@apply bg-amber-50/10 text-amber-100;
+	}
+
+	.dark .rtm-theme-pop .rtm-close {
+		@apply text-indigo-200/70 hover:bg-white/5 hover:text-amber-50;
+	}
+
+	.dark .rtm-theme-pop .rtm-approve {
+		@apply bg-amber-50 text-indigo-950 hover:bg-rose-400 hover:text-white;
+	}
+
+	.dark .rtm-theme-pop .rtm-dismiss {
+		@apply text-indigo-300/60 hover:bg-white/10 hover:text-amber-50;
+	}
+
+	/* Liquid --------------------------------------------------------------- */
+
+	.rtm-theme-liquid .rtm-backdrop {
+		@apply bg-slate-900/45 backdrop-blur-sm;
+	}
+
+	.rtm-theme-liquid .rtm-panel {
+		@apply rounded-[30px] ring-1 ring-white/25;
+		box-shadow: 0 30px 60px -22px rgba(2, 10, 40, 0.85);
+	}
+
+	/* The specular edges sit on the content, not the panel: the panel clips its
+	   children, so an inset shadow there would be buried under this fill. */
+	.rtm-theme-liquid .rtm-content {
+		@apply bg-gradient-to-br from-white/25 to-white/10 p-6 backdrop-blur-2xl backdrop-saturate-150;
+		box-shadow:
+			inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+			inset 0 -1px 0 rgba(255, 255, 255, 0.18);
+	}
+
+	.rtm-theme-liquid .rtm-titlebar {
+		@apply border-b border-white/20 text-white/60;
+	}
+
+	.rtm-theme-liquid .rtm-title {
+		@apply text-2xl font-semibold tracking-tight text-white drop-shadow;
+	}
+
+	.rtm-theme-liquid .rtm-message {
+		@apply text-sm leading-6 text-white/80;
+	}
+
+	.rtm-theme-liquid .rtm-icon {
+		@apply rounded-full bg-white/20 text-white ring-1 ring-white/40;
+	}
+
+	.rtm-theme-liquid .rtm-close {
+		@apply rounded-full bg-white/10 text-white ring-1 ring-white/30 hover:bg-white/20;
+	}
+
+	.rtm-theme-liquid .rtm-approve {
+		@apply rounded-full bg-white font-semibold text-slate-700 shadow-lg hover:bg-slate-100;
+	}
+
+	.rtm-theme-liquid .rtm-dismiss {
+		@apply rounded-full text-white/70 hover:bg-white/15 hover:text-white;
+	}
+
+	/* Command --------------------------------------------------------------- */
+
+	.rtm-theme-command .rtm-backdrop {
+		@apply bg-black/75 backdrop-blur-sm;
+	}
+
+	.rtm-theme-command .rtm-panel {
+		@apply rounded-2xl ring-1 ring-white/10 shadow-[0_40px_70px_-24px_#000];
+	}
+
+	.rtm-theme-command .rtm-titlebar {
+		@apply border-b border-white/10 bg-neutral-950 text-neutral-500;
+	}
+
+	.rtm-theme-command .rtm-content {
+		@apply bg-neutral-900 px-5 py-4;
+	}
+
+	.rtm-theme-command .rtm-title {
+		@apply text-[15px] font-semibold tracking-tight text-neutral-50;
+	}
+
+	/* Same bargain as the terminal prompt: the chevron is presentation. */
+	.rtm-theme-command .rtm-title::before {
+		content: '› ';
+		color: #fb923c;
+	}
+
+	.rtm-theme-command .rtm-message {
+		@apply text-sm leading-6 text-neutral-400;
+	}
+
+	/* Shortcut hints are the point of this look, so free markup gets them free. */
+	.rtm-theme-command .rtm-content kbd {
+		@apply rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-neutral-400;
+	}
+
+	.rtm-theme-command .rtm-icon {
+		@apply rounded-lg bg-orange-400/15 text-orange-300 ring-1 ring-orange-400/30;
+	}
+
+	.rtm-theme-command .rtm-close {
+		@apply rounded-lg text-neutral-400 hover:bg-white/5 hover:text-neutral-100;
+	}
+
+	.rtm-theme-command .rtm-approve {
+		@apply rounded-lg bg-orange-400 font-medium text-orange-950 hover:brightness-110;
+	}
+
+	.rtm-theme-command .rtm-dismiss {
+		@apply rounded-md bg-white/10 text-neutral-400 hover:bg-white/15 hover:text-neutral-100;
+	}
+
+	/* Elevated -------------------------------------------------------------- */
+
+	.rtm-theme-elevated .rtm-backdrop {
+		@apply bg-black/70;
+	}
+
+	.rtm-theme-elevated .rtm-panel {
+		@apply rounded-xl ring-1 ring-white/10;
+		box-shadow: 0 24px 48px -18px #000;
+	}
+
+	/* The light hairline is what stops a dark panel reading as a hole. */
+	.rtm-theme-elevated .rtm-content {
+		@apply bg-zinc-900 p-5 sm:p-6;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	}
+
+	.rtm-theme-elevated .rtm-titlebar {
+		@apply border-b border-white/10 bg-zinc-950 text-zinc-500;
+	}
+
+	.rtm-theme-elevated .rtm-title {
+		@apply text-base font-semibold tracking-tight text-zinc-50;
+	}
+
+	.rtm-theme-elevated .rtm-message {
+		@apply text-sm leading-6 text-zinc-400;
+	}
+
+	.rtm-theme-elevated .rtm-icon {
+		@apply rounded-full bg-sky-400/15 text-sky-300 ring-1 ring-sky-400/30;
+	}
+
+	.rtm-theme-elevated .rtm-close {
+		@apply rounded-lg text-zinc-400 hover:bg-white/5 hover:text-zinc-100;
+	}
+
+	.rtm-theme-elevated .rtm-approve {
+		@apply rounded-lg bg-sky-300 font-medium text-sky-950 hover:bg-sky-200;
+	}
+
+	.rtm-theme-elevated .rtm-dismiss {
+		@apply rounded-lg text-zinc-500 hover:bg-white/5 hover:text-zinc-200;
 	}
 
 	/* Caret --------------------------------------------------------------- */

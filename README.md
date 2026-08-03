@@ -15,16 +15,24 @@ hard parts are already done for you:
 - **Animations** — the backdrop fades while the panel pops in and out on separate
   timings, including a real exit animation before unmount. `prefers-reduced-motion`
   is respected.
-- **Themes** — seven looks ship with the package: `neutral`, `terminal`,
-  `brutalist`, `glass`, `editorial`, `neon`, `minimal`. One prop, no Tailwind config,
-  and your own classes still override them.
+- **Themes** — eleven looks ship with the package: `neutral`, `terminal`,
+  `brutalist`, `glass`, `editorial`, `neon`, `minimal`, `pop`, `liquid`, `command`,
+  `elevated`. One prop, no Tailwind config, and your own classes still override them.
 - **Polish** — blurred backdrop, scroll lock that compensates the scrollbar width so
   the page never shifts, a top-right "X" button, dark mode, and an optional
   bottom-sheet presentation on mobile.
 
-## The seven themes
+## The eleven themes
 
 <table>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/pop.png" alt="The pop theme: a saturated indigo backdrop, a cream panel topped by a multicolour ribbon and an oversized title" width="100%" /><br /><code>pop</code> — Saturated backdrop, cream panel, multicolour ribbon, oversized title.</td>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/liquid.png" alt="The liquid theme: a tinted glass panel with a specular top edge over a colourful page" width="100%" /><br /><code>liquid</code> — Tinted glass: thick blur, specular top edge, long shadow, pill buttons.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/command.png" alt="The command theme: a near-black command-palette panel with a chevron title and an amber confirm button" width="100%" /><br /><code>command</code> — Command-palette chrome: tight rhythm, chevron title, amber confirm.</td>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/elevated.png" alt="The elevated theme: a zinc panel lifted by a light hairline and a long shadow, with a sky-blue confirm button" width="100%" /><br /><code>elevated</code> — Dark-native zinc panel, light hairline instead of a grey border, sky confirm.</td>
+  </tr>
   <tr>
     <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neutral.png" alt="The neutral theme: a white panel with an outlined cancel button and a red destructive confirm button" width="100%" /><br /><code>neutral</code> — The default. White panel, outlined cancel, red destructive confirm.</td>
     <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/terminal.png" alt="The terminal theme: dark navy window, traffic lights, monospace, blinking caret" width="100%" /><br /><code>terminal</code> — Dark navy window, traffic lights, monospace, blinking caret.</td>
@@ -35,7 +43,7 @@ hard parts are already done for you:
   </tr>
   <tr>
     <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/editorial.png" alt="The editorial theme: warm paper stock, serif title, hairline rules, small caps" width="100%" /><br /><code>editorial</code> — Warm paper stock, serif title, hairline rules, small caps.</td>
-    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neon.png" alt="The neon theme: deep violet panel, glowing ring, gradient confirm" width="100%" /><br /><code>neon</code> — Deep violet panel, glowing ring, gradient confirm.</td>
+    <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neon.png" alt="The neon theme: a deep violet panel ringed by a gradient hairline and floating in a coloured halo" width="100%" /><br /><code>neon</code> — Halo backdrop, 1.5px gradient hairline, gradient confirm.</td>
   </tr>
   <tr>
     <td width="50%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/minimal.png" alt="The minimal theme: no borders, no shadow — hierarchy carried by space alone" width="100%" /><br /><code>minimal</code> — No borders, no shadow — hierarchy carried by space alone.</td>
@@ -59,6 +67,11 @@ hard parts are already done for you:
     <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/neon-dark.png" alt="The neon theme in dark mode: a near-black violet panel with a glowing fuchsia ring and gradient confirm button" width="100%" /><br /><code>neon</code></td>
     <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/minimal-dark.png" alt="The minimal theme in dark mode: a flat black panel with white type and no borders" width="100%" /><br /><code>minimal</code></td>
   </tr>
+  <tr>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/pop-dark.png" alt="The pop theme in dark mode: a deep indigo panel under the multicolour ribbon with a cream confirm button" width="100%" /><br /><code>pop</code></td>
+    <td width="33%" valign="top"><img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/themes/terminal-dark.png" alt="The terminal theme in dark mode: a dark navy window with traffic lights and monospace type" width="100%" /><br /><code>terminal</code></td>
+    <td width="33%"></td>
+  </tr>
 </table>
 
 </details>
@@ -71,7 +84,7 @@ Requires **React 18 or 19** and **Tailwind CSS 4**.
 
 ## Table of contents
 
-- [The seven themes](#the-seven-themes)
+- [The eleven themes](#the-eleven-themes)
 - [Installation](#installation)
 - [Quick start](#quick-start)
 - [The three variants](#the-three-variants)
@@ -141,10 +154,13 @@ conditionally mounting the modal) so the exit animation can play.
 
 ## The three variants
 
+The shots below run the `neon` theme — its gradient hairline and halo — over the
+plain variant markup, so `theme='neon'` is the only difference from the snippets.
+
 ### `simple` — a message and a close button
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/simple.png" alt="The simple modal: a title, a message and a single outlined close button" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/simple.png" alt="The simple modal in the neon theme: a violet panel ringed by a gradient hairline, a title, a message and a single close button" width="720" />
 </p>
 
 ```jsx
@@ -161,7 +177,7 @@ conditionally mounting the modal) so the exit animation can play.
 ### `approval` — confirm or cancel
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/approval.png" alt="The approval modal: a vermillion warning badge, a title, a message, and cancel and confirm buttons" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/approval.png" alt="The approval modal in the neon theme: a glowing warning badge, a title, a message, and cancel and gradient confirm buttons" width="720" />
 </p>
 
 ```jsx
@@ -186,7 +202,7 @@ destructive red.
 ### `form` — wrap your own form
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/form.png" alt="The form modal wrapping a custom employee form with inputs, selects and date pickers" width="720" />
+  <img src="https://raw.githubusercontent.com/Guillaume-da/tailwind-react-modal/master/docs/screenshots/form.png" alt="The form modal in the neon theme, wrapping a custom employee form with inputs, selects and date pickers" width="720" />
 </p>
 
 ```jsx
@@ -313,7 +329,7 @@ Two things worth knowing:
 
 ## Themes
 
-Seven looks ship with the package — [pictured at the top](#the-seven-themes). Pick
+Eleven looks ship with the package — [pictured at the top](#the-eleven-themes). Pick
 one with the `theme` prop:
 
 ```jsx
